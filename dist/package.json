@@ -1,0 +1,19 @@
+{
+  "name": "matchto",
+  "version": "1.0.0",
+  "description": "No dependency pattern matching library, able to work with numbers, arrays, strings, Dates or objects",
+  "main": "index.js",
+  "repository": "https://github.com/jindra12/matchto.git",
+  "author": "Jan Jindráček",
+  "license": "MIT",
+  "man": ["./README.md"],
+  "keywords": ["match", "matchto", "object", "string",
+               "Date", "array", "pattern", "matching",
+               "matches", "patterns", "pattern matching",
+               "match statement", "compare", "comparison", "deep",
+               "data", "utility", "util"],
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
