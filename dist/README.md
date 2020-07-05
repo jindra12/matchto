@@ -149,4 +149,18 @@ expect(match([1, 2, 3], 'all')
 
 ```
 
+### Changes since 1.4.0
+
+Can now find ending sequence, or check if there are given elements in the array.
+
+Also, fixed bugs related to js type checks.
+
+```typescript
+
+expect(match([1, 2, 3, 4]).to({ 'last': [2, 3] }, 'wrong').to({ 'last': [3, 4] }, 'right').solve()).toBe('right');
+
+expect(match([1, 2, { one: 7 }, 9]).to({ 'some': [2, 7] }, 'wrong').to({ 'some': [{ one: 7 }, 1] }, 'right').solve()).toBe('right');
+
+```
+
 If you notice any bugs or errors, do not hesitate to create an issue or a pull request!

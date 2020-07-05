@@ -67,4 +67,10 @@ describe("Can match numeric arrays, objects and values", () => {
             .to({ any: 3 }, (_, matched) => matched.any).solve()
         ).toEqual([2, 3])
     });
+    test("Can find ending sequence in an array", () => {
+        expect(match([1, 2, 3, 4]).to({ 'last': [2, 3] }, 'wrong').to({ 'last': [3, 4] }, 'right').solve()).toBe('right');
+    });
+    test("Can find sequence scattered in array", () => {
+        expect(match([1, 2, { one: 7 }, 9]).to({ 'some': [2, 7] }, 'wrong').to({ 'some': [{ one: 7 }, 1] }, 'right').solve()).toBe('right');
+    });
 });

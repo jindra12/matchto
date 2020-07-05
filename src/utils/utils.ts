@@ -1,4 +1,4 @@
-import { RandomConstant, AllowedTo, MatchValue, MatchStore, KindOfMatch, MultiCompare, SimpleCompare, ModCompare } from "../types";
+import { RandomConstant, AllowedTo, MatchValue, MatchStore, KindOfMatch, MultiCompare, SimpleCompare, ModCompare, ArrayMatchType } from "../types";
 
 export const Any: RandomConstant = 'any_random_constant';
 export const mod: ModCompare = (mod: number, equals: number = 0) => value => value % mod === equals;
@@ -41,27 +41,38 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
         return false;
     }
     if (Array.isArray(to)) {
-        if (!Array.isArray(item)) {
-            if ((item as any).any !== undefined) {
-                return to.find(part => matcher(part, (item as any).any));
-            }
-            if ((item as any).seek !== undefined) {
-                const seekLength = (item as any).seek.length;
-                for (let i = 0; i < to.length; i++) {
-                    const subArray: any[] = to.slice(i, i + seekLength) as any;
-                    if (subArray.length === seekLength) {
-                        const res = subArray
-                            .reduce((p, c, j) => !p ? false : matcher(c, (item as any).seek[j]), true);
-                        if (res) {
-                            return true;
+        if (Array.isArray(item)) {
+            return to
+                .reduce((p, c, i) => !p ? false : (item[i] === undefined ? true : matcher(c, item[i])), true);
+        }
+        if (typeof item === 'object') {
+            const key = Object.keys(item)[0] as ArrayMatchType;
+            switch (key) {
+                case 'any':
+                    return to.find(part => matcher(part, (item as any).any));
+                case 'seek':
+                    const seekLength = (item as any).seek.length;
+                    for (let i = 0; i < to.length; i++) {
+                        const subArray: any[] = to.slice(i, i + seekLength) as any;
+                        if (subArray.length === seekLength) {
+                            const res = subArray
+                                .reduce((p, c, j) => !p ? false : matcher(c, (item as any).seek[j]), true);
+                            if (res) {
+                                return true;
+                            }
                         }
                     }
-                }
+                    return false;
+                case 'last':
+                    const reversedItem = [...(item as any).last].reverse();
+                    return [...to].reverse().reduce((p, part, i) => !p ? false : (i >= reversedItem.length || matcher(part, reversedItem[i])), true);
+                case 'some':
+                    return (item as any).some.reduce((p: boolean, c: any) => !p ? false : matcher(to, { 'any': c } as any), true);
+                default:
+                    return false;
             }
-            return false;
         }
-        return to
-            .reduce((p, c, i) => !p ? false : item[i] === undefined ? true : matcher(c, item[i]), true);
+        return false;
     }
     switch (typeof to) {
         case 'string':
@@ -87,7 +98,7 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
             return true;
         case 'object':
             return item === Any || Boolean(
-                Object
+                typeof item === 'object' && Object
                     .entries(to)
                     .reduce(
                         (p, [key, value]) => !p

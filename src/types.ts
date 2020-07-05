@@ -6,6 +6,12 @@ export type MultiCompare = (a: number, b: number) => InnerCompare;
 export type InnerCompare = (value: number) => boolean;
 export type NumericalComparison = SimpleCompare | MultiCompare | ModCompare;
 export type ThenType<T, E, F> = E | ((item: T, match: F) => E)
+export type ArrayMatchType = 'any' | 'last' | 'some' | 'seek';
+export type ArrayMatch<T> = { 'any': MatchValue<T> } |
+	{ 'last': MatchValue<T>[] } |
+	{ 'some': MatchValue<T>[] } |
+	{ 'seek': MatchValue<T>[] } | 
+	MatchValue<T>[];
 
 export type MatchStore<T, E> = Array<{ item: MatchValue<T>, then: ThenType<T, E, MatchValue<T>>, guard?: GuardMatch<T> }>
 export type AllowedTo = [] | object | string | number | boolean;
@@ -19,7 +25,7 @@ export type MatchValue<T> = (T extends string
 			? boolean
 			: (
 				T extends Array<infer U>
-				? MatchValue<U>[] | { 'any': MatchValue<U> } | { 'seek': MatchValue<U>[] }
+				? ArrayMatch<U>
 				: (
 					T extends Date
 					? string | number | Date | RegExp
