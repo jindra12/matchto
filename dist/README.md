@@ -98,4 +98,25 @@ expect(match(testObject1).to({
 
 ```
 
+### Changes since 2.1.0
+
+Can now use number comparison methods exported in module:
+Also, now the package is exported in ES5 Javascript.
+
+```typescript
+
+expect(match({ a: 2, b: 3, c: 4, d: { e: 5 } }).to({
+    a: mod(2, 1),
+    b: less(4),
+    c: moreOrEqual(1),
+    d: { e: lessOrEqual(6) }
+}, 'wrong').to({
+    a: mod(2),
+    b: less(4),
+    c: moreOrEqual(1),
+    d: { e: lessOrEqual(6) }
+}, 'right').solve()).toBe('right');
+
+```
+
 If you notice any bugs or errors, do not hesitate to create an issue or a pull request!

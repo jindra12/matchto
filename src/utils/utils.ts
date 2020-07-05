@@ -1,6 +1,12 @@
-import { RandomConstant, AllowedTo, MatchValue, MatchStore, KindOfMatch } from "../types";
+import { RandomConstant, AllowedTo, MatchValue, MatchStore, KindOfMatch, MultiCompare, SimpleCompare, ModCompare } from "../types";
 
 export const Any: RandomConstant = 'any_random_constant';
+export const mod: ModCompare = (mod: number, equals: number = 0) => value => value % mod === equals;
+export const less: SimpleCompare = (than: number) => value => value < than;
+export const more: SimpleCompare = (than: number) => value => value < than;
+export const lessOrEqual: SimpleCompare = (than: number) => value => value <= than;
+export const moreOrEqual: SimpleCompare = (than: number) => value => value >= than;
+export const between: MultiCompare = (a: number, b: number) => value => value >= a && value <= b;
 
 export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>, kind: KindOfMatch) => (
     kind === 'last' ? store.reverse() : store
@@ -54,12 +60,19 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
                 return item.test(to as any);
             }
             throw Error('Could not find anything to compare "to"');
-        case 'boolean':
         case 'number':
+            if (typeof item === 'number' || typeof item === 'string') {
+                return to === item || item === 'any_random_constant';
+            } else if (typeof item === 'function') {
+                return (item as any)(to);
+            }
+            throw Error('Failed to find a way to compare to a number');
+        case 'boolean':
         case 'bigint':
-            return to === item || item === 'any_random_constant';
         case 'undefined':
-            throw Error('Cannot compare to undefined!');
+            return to === item || item === 'any_random_constant';
+        case 'function':
+            return true;
         case 'object':
             return item === 'any_random_constant' || Boolean(
                 Object

@@ -1,4 +1,4 @@
 import { match } from './matcher';
-export { Any } from './utils/utils';
+export { Any, mod, more, moreOrEqual, less, lessOrEqual } from './utils/utils';
 
 export default match;

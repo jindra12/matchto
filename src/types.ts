@@ -1,5 +1,10 @@
 export type KindOfMatch = 'break' | 'first' | 'last' | 'all';
 export type RandomConstant = 'any_random_constant'
+export type SimpleCompare = (compare: number) => InnerCompare;
+export type ModCompare = (mod: number, equals?: number) => InnerCompare;
+export type MultiCompare = (a: number, b: number) => InnerCompare;
+export type InnerCompare = (value: number) => boolean;
+export type NumericalComparison = SimpleCompare | MultiCompare | ModCompare;
 
 export type MatchStore<T, E> = Array<{ item: MatchValue<T>, then: E | ((item: T) => E), guard?: GuardMatch<T> }>
 export type AllowedTo = [] | object | string | number | boolean;
@@ -7,7 +12,7 @@ export type MatchValue<T> = (T extends string
 	? string | RegExp
 	: (
 		T extends number
-		? number
+		? number | InnerCompare
 		: (
 			T extends boolean
 			? boolean
