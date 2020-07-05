@@ -7,7 +7,7 @@
   "author": "Jan Jindráček",
   "license": "MIT",
   "scripts": {
-    "build": "rm ./dist/index.js ./dist/index.d.ts; rm -rf ./dist/utils; ./dist/types.js ./dist/types.d.ts; yarn tsc",
+    "build": "rm ./dist/*.js ./dist/*.d.ts; rm -rf ./dist/utils; yarn tsc",
     "test": "yarn jest --watch"
   },
   "devDependencies": {
