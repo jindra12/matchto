@@ -18,7 +18,7 @@ export type MatchValue<T> = (T extends string
 			? boolean
 			: (
 				T extends Array<infer U>
-				? MatchValue<U>[] | { 'any': MatchValue<U> }
+				? MatchValue<U>[] | { 'any': MatchValue<U> } | { 'seek': MatchValue<U>[] }
 				: (
 					T extends Date
 					? string | number | Date | RegExp

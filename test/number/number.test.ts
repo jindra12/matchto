@@ -53,4 +53,9 @@ describe("Can match numeric arrays, objects and values", () => {
             d: { e: lessOrEqual(6) }
         }, 'right').solve()).toBe('right');
     });
+    test("Can seek a particular sequence in array", () => {
+        expect(match([4, 5, { one: 7 }, 8, 7, 9])
+            .to({ seek: [{ one: 7 }, 7, 8] }, 'wrong')
+            .to({ seek: [5, { one: 7 }, 8] }, 'right').solve()).toBe('right');
+    });
 });

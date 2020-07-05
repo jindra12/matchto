@@ -98,7 +98,7 @@ expect(match(testObject1).to({
 
 ```
 
-### Changes since 2.1.0
+### Changes since 1.1.0
 
 Can now use number comparison methods exported in module:
 Also, now the package is exported in ES5 Javascript.
@@ -116,6 +116,19 @@ expect(match({ a: 2, b: 3, c: 4, d: { e: 5 } }).to({
     c: moreOrEqual(1),
     d: { e: lessOrEqual(6) }
 }, 'right').solve()).toBe('right');
+
+```
+
+### Changes since 1.2.0
+
+Can now seek a sequence of elements inside an array
+Also, will not crash when comparing two incomparable values
+
+```typescript
+
+expect(match([4, 5, { one: 7 }, 8, 7, 9])
+    .to({ seek: [{ one: 7 }, 7, 8] }, 'wrong')
+    .to({ seek: [5, { one: 7 }, 8] }, 'right').solve()).toBe('right');
 
 ```
 

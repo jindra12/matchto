@@ -38,14 +38,28 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
         if (typeof item === 'number') {
             return item === to.getTime();
         }
-        throw Error('No valid Date comparison found!');
+        return false;
     }
     if (Array.isArray(to)) {
         if (!Array.isArray(item)) {
             if ((item as any).any !== undefined) {
                 return to.find(part => matcher(part, (item as any).any));
             }
-            throw Error('Cannot compare an array to non-array');
+            if ((item as any).seek !== undefined) {
+                const seekLength = (item as any).seek.length;
+                for (let i = 0; i < to.length; i++) {
+                    const subArray: any[] = to.slice(i, i + seekLength) as any;
+                    if (subArray.length === seekLength) {
+                        const res = subArray
+                            .map((part, i) => matcher(part, (item as any).seek[i]))
+                            .reduce((p, c) => !p ? false : c, true);
+                        if (res) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
         return to
             .map((part, i) => item[i] === undefined ? true : matcher(part, item[i]))
@@ -59,14 +73,14 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
             if (item instanceof RegExp) {
                 return item.test(to as any);
             }
-            throw Error('Could not find anything to compare "to"');
+            return false;
         case 'number':
             if (typeof item === 'number' || typeof item === 'string') {
                 return to === item || item === 'any_random_constant';
             } else if (typeof item === 'function') {
                 return (item as any)(to);
             }
-            throw Error('Failed to find a way to compare to a number');
+            return false;
         case 'boolean':
         case 'bigint':
         case 'undefined':
