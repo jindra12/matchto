@@ -5,8 +5,9 @@ export type ModCompare = (mod: number, equals?: number) => InnerCompare;
 export type MultiCompare = (a: number, b: number) => InnerCompare;
 export type InnerCompare = (value: number) => boolean;
 export type NumericalComparison = SimpleCompare | MultiCompare | ModCompare;
+export type ThenType<T, E, F> = E | ((item: T, match: F) => E)
 
-export type MatchStore<T, E> = Array<{ item: MatchValue<T>, then: E | ((item: T) => E), guard?: GuardMatch<T> }>
+export type MatchStore<T, E> = Array<{ item: MatchValue<T>, then: ThenType<T, E, MatchValue<T>>, guard?: GuardMatch<T> }>
 export type AllowedTo = [] | object | string | number | boolean;
 export type MatchValue<T> = (T extends string
 	? string | RegExp
@@ -33,7 +34,7 @@ export type MatchValue<T> = (T extends string
 	)) | RandomConstant;
 
 export interface InnerMatch<T extends AllowedTo, K extends KindOfMatch, E = void> {
-	to: <F>(item: MatchValue<T>, then: F | ((item: T) => F), guard?: GuardMatch<T>) => InnerMatch<T, K, F | E>;
+	to: <F, U extends MatchValue<T> = MatchValue<T>>(item: U, then: ThenType<T, F, U>, guard?: GuardMatch<T>) => InnerMatch<T, K, F | E>;
 	store: MatchStore<T, E>;
 	solve: K extends 'all' ? () => E[] : () => E;
 	kind: K;

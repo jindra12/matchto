@@ -101,6 +101,7 @@ expect(match(testObject1).to({
 ### Changes since 1.1.0
 
 Can now use number comparison methods exported in module:
+
 Also, now the package is exported in ES5 Javascript.
 
 ```typescript
@@ -121,14 +122,30 @@ expect(match({ a: 2, b: 3, c: 4, d: { e: 5 } }).to({
 
 ### Changes since 1.2.0
 
-Can now seek a sequence of elements inside an array
-Also, will not crash when comparing two incomparable values
+Can now seek a sequence of elements inside an array.
+
+Also, will not crash when comparing two incomparable values.
 
 ```typescript
 
 expect(match([4, 5, { one: 7 }, 8, 7, 9])
     .to({ seek: [{ one: 7 }, 7, 8] }, 'wrong')
     .to({ seek: [5, { one: 7 }, 8] }, 'right').solve()).toBe('right');
+
+```
+
+### Changes since 1.3.0
+
+Can now find which exact match was found (useful especially in 'all' mode)
+
+Also, optimized searching objects and arrays, won't do unnecessary compares.
+
+```typescript
+
+expect(match([1, 2, 3], 'all')
+    .to({ any: 2 }, (_, matched) => matched.any)
+    .to({ any: 3 }, (_, matched) => matched.any).solve()
+).toEqual([2, 3]);
 
 ```
 

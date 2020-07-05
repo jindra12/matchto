@@ -57,5 +57,14 @@ describe("Can match numeric arrays, objects and values", () => {
         expect(match([4, 5, { one: 7 }, 8, 7, 9])
             .to({ seek: [{ one: 7 }, 7, 8] }, 'wrong')
             .to({ seek: [5, { one: 7 }, 8] }, 'right').solve()).toBe('right');
+        expect(match([4, 5, { one: 7 }, 8, 7, 9])
+            .to({ seek: [{ one: 7 }, 7, 8] }, 'wrong')
+            .to({ seek: [4, 5, { one: 7 }, 8, 7, 9] }, 'right').solve()).toBe('right');
+    });
+    test("Can find exactly what was matched in 'all' mode", () => {
+        expect(match([1, 2, 3], 'all')
+            .to({ any: 2 }, (_, matched) => matched.any)
+            .to({ any: 3 }, (_, matched) => matched.any).solve()
+        ).toEqual([2, 3])
     });
 });
