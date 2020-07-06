@@ -4,7 +4,7 @@ interface ComplexTestObject {
     id: number;
     name: string;
     address: string;
-    phone?: [string, string]
+    phone?: [string | null, string]
     dateOfBirth: Date;
     workStatistics?: {
         isAlive: boolean;
@@ -35,6 +35,20 @@ const testObject2: ComplexTestObject = {
     phone: ['+420', '555 111 222'],
     dateOfBirth: new Date(1990, 0, 2),
     workStatistics: null,
+    mail: 'oswald@gmail.com',
+};
+
+const testObject3: ComplexTestObject = {
+    id: 1,
+    name: 'Oswald',
+    address: 'Prague, Charles square',
+    phone: [null, '555 111 222'],
+    dateOfBirth: new Date(1990, 0, 2),
+    workStatistics: {
+        isAlive: true,
+        worksFromHome: false,
+        jobTitle: 'Plumber',
+    },
     mail: 'oswald@gmail.com',
 };
 
@@ -72,5 +86,10 @@ describe("Can match a complex object", () => {
             phone: { 'any': '+420' },
             workStatistics: null,
         }, obj => obj.id).solve()).toBe(1);
+        expect(match(testObject3).to({
+            phone: [Any, '555 666 777'],
+        }, 'wrong').to({
+            phone: [null, Any]
+        }, 'right').solve()).toBe('right');
     });
 });

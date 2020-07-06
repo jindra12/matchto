@@ -74,4 +74,10 @@ describe("Can match numeric arrays, objects and values", () => {
     test("Can find sequence scattered in array", () => {
         expect(match([1, 2, { one: 7 }, 9]).to({ 'some': [2, 7] }, 'wrong').to({ 'some': [{ one: 7 }, 1] }, 'right').solve()).toBe('right');
     });
+    test("Can use negation in match", () => {
+        expect(match({ one: 1, two: 2, three: [3, 4] })
+            .to({ one: 1, two: 2 }, 'wrong').not()
+            .to({ three: { 'last': [4, 3] } }, 'right').not().solve()
+        ).toBe('right');
+    });
 });

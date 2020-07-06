@@ -191,6 +191,8 @@ expect(match({ d: date3 }, 'all')
 
 ```
 
+### Changes since 1.6.0
+
 Can now compare strings with functions similar to the numerical ones.
 
 Local compare is not supported yet. Also, minor typing refactor :) .
@@ -205,5 +207,19 @@ expect(match('Carl', 'all')
 
 ```
 
+### Changes since 1.7.0
+
+Can use .not() to negate the matching function
+
+Fixed null comparison to respond to 'Any'
+
+```typescript
+
+expect(match({ one: 1, two: 2, three: [3, 4] })
+    .to({ one: 1, two: 2 }, 'wrong').not()
+    .to({ three: { 'last': [4, 3] } }, 'right').not().solve()
+).toBe('right');
+
+```
 
 If you notice any bugs or errors, do not hesitate to create an issue or a pull request!

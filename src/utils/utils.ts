@@ -9,18 +9,21 @@ export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>,
     if (p.length === 1 && (kind === 'last' || kind === 'first')) {
         shouldContinue = false;
     }
-    if (shouldContinue && matcher(to, c.item) && (!c.guard || c.guard(to))) {
-        if (kind === 'break' && p.length > 0) {
-            throw Error('Cannot match more than one item on "break" mode.')
+    if (shouldContinue) {
+        const matched = matcher(to, c.item);
+        if ((matched && !c.not || !matched && c.not) && (!c.guard || c.guard(to))) {
+            if (kind === 'break' && p.length > 0) {
+                throw Error('Cannot match more than one item on "break" mode.')
+            }
+            p.push(typeof c.then === 'function' ? (c.then as any)(to, c.item) : c.then);    
         }
-        p.push(typeof c.then === 'function' ? (c.then as any)(to, c.item) : c.then);
     }
     return p;
 }, []);
 
 const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
     if (to === null) {
-        return item === null;
+        return item === null || item === Any;
     }
 
     if (to instanceof Date) {
