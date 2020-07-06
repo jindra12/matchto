@@ -3,37 +3,42 @@ export type RandomConstant = 'any_random_constant'
 export type ThenType<T, E, F> = E | ((item: T, match: F) => E)
 export type ArrayMatchType = 'any' | 'last' | 'some' | 'seek';
 export type ArrayMatch<T> = { 'any': MatchValue<T> } |
-	{ 'last': MatchValue<T>[] } |
-	{ 'some': MatchValue<T>[] } |
-	{ 'seek': MatchValue<T>[] } | 
+{ 'last': MatchValue<T>[] } |
+{ 'some': MatchValue<T>[] } |
+{ 'seek': MatchValue<T>[] } |
 	MatchValue<T>[];
 export type DateCompareType = Date | string | number;
 
 export type MatchStore<T, E> = Array<{ item: MatchValue<T>, then: ThenType<T, E, MatchValue<T>>, guard?: GuardMatch<T> }>
 export type AllowedTo = [] | object | string | number | boolean;
-export type MatchValue<T> = (T extends string
-	? string | RegExp | ((value: string) => boolean)
+export type MatchValue<T> = (T extends null
+	? null
 	: (
-		T extends number
-		? number | ((value: number) => boolean)
+		T extends string
+		? string | RegExp | ((value: string) => boolean)
 		: (
-			T extends boolean
-			? boolean
+			T extends number
+			? number | ((value: number) => boolean)
 			: (
-				T extends Array<infer U>
-				? ArrayMatch<U>
+				T extends boolean
+				? boolean
 				: (
-					T extends Date
-					? string | number | Date | RegExp | ((value: DateCompareType) => boolean)
-                    : (
-						T extends Object
-						? { [K in keyof T]?: MatchValue<T[K]> }
-						: never
+					T extends Array<infer U>
+					? ArrayMatch<U>
+					: (
+						T extends Date
+						? string | number | Date | RegExp | ((value: DateCompareType) => boolean)
+						: (
+							T extends Object
+							? { [K in keyof T]?: MatchValue<T[K]> }
+							: never
+						)
 					)
 				)
 			)
 		)
-	)) | RandomConstant;
+	)
+) | RandomConstant;
 
 export interface InnerMatch<T extends AllowedTo, K extends KindOfMatch, E = void> {
 	to: <F, U extends MatchValue<T> = MatchValue<T>>(item: U, then: ThenType<T, F, U>, guard?: GuardMatch<T>) => InnerMatch<T, K, F | E>;

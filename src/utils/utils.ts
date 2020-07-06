@@ -19,6 +19,10 @@ export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>,
 }, []);
 
 const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
+    if (to === null) {
+        return item === null;
+    }
+
     if (to instanceof Date) {
         if (item instanceof Date) {
             return to.getTime() === item.getTime();
