@@ -73,6 +73,9 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
     }
     switch (typeof to) {
         case 'string':
+            if (typeof item === 'function') {
+                return (item as any)(to);
+            }
             if (typeof item === 'string') {
                 return to === item || item === Any;
             }

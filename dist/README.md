@@ -191,5 +191,19 @@ expect(match({ d: date3 }, 'all')
 
 ```
 
+Can now compare strings with functions similar to the numerical ones.
+
+Local compare is not supported yet. Also, minor typing refactor :) .
+
+```typescript
+
+expect(match('Carl', 'all')
+    .to(less('Adam'), 'wrong')
+    .to(more('Adam'), 'right')
+    .to(between('Adam', 'Zeta'), 'right')
+    .solve()).toEqual(['right', 'right']);
+
+```
+
 
 If you notice any bugs or errors, do not hesitate to create an issue or a pull request!

@@ -1,4 +1,4 @@
-import match, { Any } from "../../src";
+import match, { Any, less, more, between } from "../../src";
 
 describe("Can match string arrays, objects and values", () => {
     test("Can match a string to a string", () => {
@@ -18,5 +18,12 @@ describe("Can match string arrays, objects and values", () => {
     });
     test("Can match a string with guard condition", () => {
         expect(match('Wooorld').to(/W.*/, 'wrong', s => s.length === 3).to(/Wo*rld/, 'right', s => s === 'Wooorld').solve()).toBe('right');
+    });
+    test("Can match a string with alphabetical comparison", () => {
+        expect(match('Carl', 'all')
+            .to(less('Adam'), 'wrong')
+            .to(more('Adam'), 'right')
+            .to(between('Adam', 'Zeta'), 'right')
+            .solve()).toEqual(['right', 'right']);
     });
 });
