@@ -21,9 +21,28 @@ export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>,
     return p;
 }, []);
 
+export const seek = <T extends AllowedTo>(to: T, item: MatchValue<T>): any[] | null => {
+    const seekLength = (item as any).seek.length;
+    for (let i = 0; i < (to as []).length; i++) {
+        const subArray: any[] = (to as []).slice(i, i + seekLength) as any;
+        if (subArray.length === seekLength) {
+            const res = subArray
+                .reduce((p, c, j) => !p ? false : matcher(c, (item as any).seek[j]), true);
+            if (res) {
+                return subArray;
+            }
+        }
+    }
+    return null;
+}
+
 const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
+    if (item === Any) {
+        return true;
+    }
+    
     if (to === null) {
-        return item === null || item === Any;
+        return item === null;
     }
 
     if (to instanceof Date) {
@@ -34,7 +53,7 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
             return item.test(to.toISOString());
         }
         if (typeof item === 'string') {
-            return item === Any || item === to.toISOString();
+            return item === to.toISOString();
         }
         if (typeof item === 'number') {
             return item === to.getTime();
@@ -44,6 +63,7 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
         }
         return false;
     }
+
     if (Array.isArray(to)) {
         if (Array.isArray(item)) {
             return to
@@ -55,18 +75,7 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
                 case 'any':
                     return to.find(part => matcher(part, (item as any).any));
                 case 'seek':
-                    const seekLength = (item as any).seek.length;
-                    for (let i = 0; i < to.length; i++) {
-                        const subArray: any[] = to.slice(i, i + seekLength) as any;
-                        if (subArray.length === seekLength) {
-                            const res = subArray
-                                .reduce((p, c, j) => !p ? false : matcher(c, (item as any).seek[j]), true);
-                            if (res) {
-                                return true;
-                            }
-                        }
-                    }
-                    return false;
+                    return seek(to, item) !== null;
                 case 'last':
                     const reversedItem = [...(item as any).last].reverse();
                     return [...to].reverse().reduce((p, part, i) => !p ? false : (i >= reversedItem.length || matcher(part, reversedItem[i])), true);
@@ -84,15 +93,15 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
                 return (item as any)(to);
             }
             if (typeof item === 'string') {
-                return to === item || item === Any;
+                return to === item as any;
             }
             if (item instanceof RegExp) {
                 return item.test(to as any);
             }
             return false;
         case 'number':
-            if (typeof item === 'number' || typeof item === 'string') {
-                return to === item || item === Any;
+            if (typeof item === 'number') {
+                return to === item as any;
             } else if (typeof item === 'function') {
                 return (item as any)(to);
             }
@@ -100,11 +109,11 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
         case 'boolean':
         case 'bigint':
         case 'undefined':
-            return to === item || item === Any;
+            return to === item as any;
         case 'function':
             return true;
         case 'object':
-            return item === Any || Boolean(
+            return Boolean(
                 typeof item === 'object' && Object
                     .entries(to)
                     .reduce(

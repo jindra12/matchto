@@ -1,4 +1,4 @@
-import match, { Any } from "../../src";
+import match, { Any, merge } from "../../src";
 
 interface ComplexTestObject {
     id: number;
@@ -91,5 +91,46 @@ describe("Can match a complex object", () => {
         }, 'wrong').to({
             phone: [null, Any]
         }, 'right').solve()).toBe('right');
+    });
+    test("Can use merger function", () => {
+        expect(match({
+            one: 1,
+            two: [5, 6, 7],
+            three: { four: [1], five: { value: "6" } },
+            four: { date: new Date(2020, 6, 6) },
+            five: "simpleString",
+            six: new Date(2020, 6, 6),
+            seven: [1, 2, 3],
+            eight: {
+                nine: [4, 5, 6, 7],
+                ten: [5, 5, 3, 2, 1],
+            },
+        }).to({
+            one: Any,
+            two: { 'last': [Any, 7] },
+            three: { four: Any, five: Any },
+            four: { date: /2020/ },
+            five: Any,
+            six: Any,
+            seven: [1, Any, 3],
+            eight: {
+                nine: { 'seek': [5, Any, 7] },
+                ten: { 'some': [Any, 5, 1, Any] },
+            },
+        }, (item, matched) => merge(item, matched)).solve()).toEqual({
+            one: 1,
+            two: { 'last': [6, 7] },
+            three: { four: [1], five: { value: "6" } },
+            four: { date: /2020/ },
+            five: "simpleString",
+            six: new Date(2020, 6, 6),
+            seven: [1, 2, 3],
+            eight: {
+                nine: { seek: [5, 6, 7] },
+                ten: { some: [5, 5, 1, 2] }, // Not recommended to use 'some' when merging
+            },
+        });
+        expect(match('anyString').to(Any, (item, matched) => merge(item, matched)).solve()).toBe('anyString');
+        expect(match(1).to(Any, (item, matched) => merge(item, matched)).solve()).toBe(1);
     });
 });

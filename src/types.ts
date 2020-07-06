@@ -27,7 +27,7 @@ export type MatchValue<T> = (T extends null
 					? ArrayMatch<U>
 					: (
 						T extends Date
-						? string | number | Date | RegExp | ((value: DateCompareType) => boolean)
+						? string | number | Date | RegExp | ((value: Date) => boolean)
 						: (
 							T extends Object
 							? { [K in keyof T]?: MatchValue<T[K]> }
