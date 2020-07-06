@@ -163,4 +163,33 @@ expect(match([1, 2, { one: 7 }, 9]).to({ 'some': [2, 7] }, 'wrong').to({ 'some':
 
 ```
 
+### Changes since 1.5.0
+
+Can now compare dates with 'before' and 'after' functions.
+
+Also, fixed a bug in 'more' function for numerical comparisons
+
+```typescript
+
+expect(match(date2)
+    .to(around(date3.toISOString(), date4.getTime()), 'wrong')
+    .to(around(date1, date3), 'right').solve()).toBe('right');
+expect(match({ d: date3 })
+    .to({ d: before(date1) }, 'wrong')
+    .to({ d: before(date4.getTime()) }, 'right').solve()).toBe('right');
+expect(match({ d: date3 })
+    .to({ d: after(date4.toISOString()) }, 'wrong')
+    .to({ d: after(date1) }, 'right').solve()).toBe('right');
+expect(match({ d: date3 }, 'all')
+    .to({ d: beforeOrNow(date1) }, 'wrong')
+    .to({ d: beforeOrNow(date4.getTime()) }, 'right')
+    .to({ d: beforeOrNow(date3.toISOString()) }, 'right').solve()).toEqual(['right', 'right']);
+expect(match({ d: date3 }, 'all')
+    .to({ d: afterOrNow(date4) }, 'wrong')
+    .to({ d: afterOrNow(date1) }, 'right')
+    .to({ d: afterOrNow(date3) }, 'right').solve()).toEqual(['right', 'right']);
+
+```
+
+
 If you notice any bugs or errors, do not hesitate to create an issue or a pull request!

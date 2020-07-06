@@ -1,12 +1,6 @@
-import { RandomConstant, AllowedTo, MatchValue, MatchStore, KindOfMatch, MultiCompare, SimpleCompare, ModCompare, ArrayMatchType } from "../types";
+import { AllowedTo, MatchValue, MatchStore, KindOfMatch, ArrayMatchType } from "../types";
+import { Any } from "./comparators";
 
-export const Any: RandomConstant = 'any_random_constant';
-export const mod: ModCompare = (mod: number, equals: number = 0) => value => value % mod === equals;
-export const less: SimpleCompare = (than: number) => value => value < than;
-export const more: SimpleCompare = (than: number) => value => value < than;
-export const lessOrEqual: SimpleCompare = (than: number) => value => value <= than;
-export const moreOrEqual: SimpleCompare = (than: number) => value => value >= than;
-export const between: MultiCompare = (a: number, b: number) => value => value >= a && value <= b;
 
 export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>, kind: KindOfMatch) => (
     kind === 'last' ? store.reverse() : store
@@ -37,6 +31,9 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>): boolean => {
         }
         if (typeof item === 'number') {
             return item === to.getTime();
+        }
+        if (typeof item === 'function') {
+            return (item as any)(to);
         }
         return false;
     }
