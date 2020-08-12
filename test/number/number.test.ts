@@ -80,4 +80,20 @@ describe("Can match numeric arrays, objects and values", () => {
             .to({ three: { 'last': [4, 3] } }, 'right').not().solve()
         ).toBe('right');
     });
+    test("Can use pattern matching to create factorial", () => {
+        expect(
+            match(5)
+                .to(1, 1)
+                .to(Any, (item, _, rematch) => item * rematch(item - 1))
+                .solve()
+        ).toBe(120);
+    });
+    test("Can use pattern matching to create fibonacci sequence", () => {
+        expect(
+            match([0, 1, 5])
+                .to([Any, Any, 0], item => [item[0], item[1]])
+                .to(Any, (item, _, rematch) => rematch([item[1], item[0] + item[1], item[2] - 1]))
+                .solve()
+        ).toEqual([5, 8]);
+    });
 });

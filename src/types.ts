@@ -1,6 +1,6 @@
 export type KindOfMatch = 'break' | 'first' | 'last' | 'all';
 export type RandomConstant = 'any_random_constant'
-export type ThenType<T, E, F> = E | ((item: T, match: F) => E)
+export type ThenType<T, E, F> = E | ((item: T, match: F, rematch: (item: Simplify<T>) => E extends unknown ? Simplify<T> : E) => E)
 export type ArrayMatchType = 'any' | 'last' | 'some' | 'seek';
 export type ArrayMatch<T> = { 'any': MatchValue<T> } |
 { 'last': MatchValue<T>[] } |
@@ -39,6 +39,20 @@ export type MatchValue<T> = (T extends null
 		)
 	)
 ) | RandomConstant;
+
+export type Simplify<T> = T extends boolean
+	? boolean
+	: (
+		T extends number
+			? number
+			: (
+				T extends string
+				? string
+				: (
+					T extends object ? T : never
+				)
+			)
+	);
 
 export interface InnerMatch<T extends AllowedTo, K extends KindOfMatch, E = void> {
 	to: <F, U extends MatchValue<T> = MatchValue<T>>(item: U, then: ThenType<T, F, U>, guard?: GuardMatch<T>) => InnerMatch<T, K, F | E>;

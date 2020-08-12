@@ -272,5 +272,31 @@ expect(match(1).to(Any, (item, matched) => merge(item, matched)).solve()).toBe(1
 
 ```
 
+### Changes since 1.9.0
+
+Can now create recursive pattern-matching to emulate end-tail recursion. Example:
+
+```typescript
+
+test("Can use pattern matching to create factorial", () => {
+    expect(
+        match(5)
+            .to(1, 1)
+            .to(Any, (item, _, rematch) => item * rematch(item - 1))
+            .solve()
+    ).toBe(120);
+});
+test("Can use pattern matching to create fibonacci sequence", () => {
+    expect(
+        match([0, 1, 5])
+            .to([Any, Any, 0], item => [item[0], item[1]])
+            .to(Any, (item, _, rematch) => rematch([item[1], item[0] + item[1], item[2] - 1]))
+            .solve()
+    ).toEqual([5, 8]);
+});
+
+```
+
+## Footer
 
 If you notice any bugs or errors, do not hesitate to create an issue or a pull request!

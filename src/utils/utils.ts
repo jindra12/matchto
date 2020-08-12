@@ -1,8 +1,9 @@
-import { AllowedTo, MatchValue, MatchStore, KindOfMatch, ArrayMatchType } from "../types";
+import { AllowedTo, MatchValue, MatchStore, KindOfMatch, ArrayMatchType, InnerMatch } from "../types";
 import { Any } from "./comparators";
+import { recursive } from "./recursive";
 
 
-export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>, kind: KindOfMatch) => (
+export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>, kind: KindOfMatch, rematch: InnerMatch<T, any>) => (
     kind === 'last' ? store.reverse() : store
 ).reduce((p: E[], c) => {
     let shouldContinue = true;
@@ -15,7 +16,7 @@ export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>,
             if (kind === 'break' && p.length > 0) {
                 throw Error('Cannot match more than one item on "break" mode.')
             }
-            p.push(typeof c.then === 'function' ? (c.then as any)(to, c.item) : c.then);    
+            p.push(typeof c.then === 'function' ? (c.then as any)(to, c.item, recursive(rematch)) : c.then);    
         }
     }
     return p;
