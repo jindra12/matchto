@@ -17,7 +17,7 @@ describe("Can match string arrays, objects and values", () => {
         expect(match({ Hello: 'Hello', World: { No: 'World', Yes: 'Yes' } }).to({ Hello: 'No' }, 'wrong').to({ World: { No: /W.*/ } }, 'right').solve()).toBe('right');
     });
     test("Can match a string with guard condition", () => {
-        expect(match('Wooorld').to(/W.*/, 'wrong', s => s.length === 3).to(/Wo*rld/, 'right', s => s === 'Wooorld').solve()).toBe('right');
+        expect(match('Wooorld').to(/W.*/, 'wrong').guard(s => s.length === 3).to(/Wo*rld/, 'right').guard(s => s === 'Wooorld').solve()).toBe('right');
     });
     test("Can match a string with alphabetical comparison", () => {
         expect(match('Carl', 'all')

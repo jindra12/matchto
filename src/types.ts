@@ -15,17 +15,33 @@ export type KindOfMatch = 'break' | 'first' | 'last' | 'all';
 export type RandomConstant = 'any_random_constant'
 
 /**
+ * Type of parameter of .then() function
+ */
+export interface ThenParams<T, E, F> {
+	/**
+	 * item which was matched
+	 */
+	item: T;
+	/**
+	 * Matched pattern
+	 */
+	matched: F;
+	/**
+	 * Allows for recursive pattern-matching
+	 */
+	rematch: (item: Simplify<T>) => E extends unknown ? Simplify<T> : E;
+	/**
+	 * Can extract variables defined by using the utility id()
+	 */
+	id: (index: string) => any;
+}
+
+/**
  * Function/value to be returned/executed when matching succeeds
- * @param item item which was matched
- * @param match Matched pattern
- * @param rematch allows for recursive pattern-matching.
- * @param id Can extract variables defined by using the utility id()
+ * @param params Results of pattern matching
  */
 export type ThenType<T, E, F> = E | ((
-	item: T,
-	match: F,
-	rematch: (item: Simplify<T>) => E extends unknown ? Simplify<T> : E,
-	id: (index: string) => any
+	params: ThenParams<T, E, F>,
 ) => E);
 
 export type ArrayMatchType = 'any' | 'last' | 'some' | 'seek';
@@ -96,9 +112,12 @@ export interface InnerMatch<T extends AllowedTo, K extends KindOfMatch, E = void
 	 * Define a pattern to match to. Then, you can define a method or value to return/execute when pattern matches.
 	 * @param item pattern
 	 * @param then function or value to return/execute
-	 * @param guard optional guard condition
 	 */
-	to: <F, U extends MatchValue<T> = MatchValue<T>>(item: U, then: ThenType<T, F, U>, guard?: GuardMatch<T>) => InnerMatch<T, K, F | E>;
+	to: <F, U extends MatchValue<T> = MatchValue<T>>(item: U, then?: ThenType<T, F, U>) => InnerMatch<T, K, (F extends unknown ? true : F) | E>;
+	/**
+	 * Optional guard condition in last to() function call
+	 */
+	guard: (guard: GuardMatch<T>) => InnerMatch<T, K, E>;
 	/**
 	 * Negates the match setup in last to() function call
 	 */

@@ -1,5 +1,5 @@
 import { InnerMatch, KindOfMatch, MatchValue, AllowedTo, ThenType } from "./types";
-import { matchAll } from "./utils/utils";
+import { matchAll } from "./utils/match";
 
 /**
  * Pass a value you would like to perform pattern matching on
@@ -18,10 +18,10 @@ export const match = <T extends AllowedTo, K extends KindOfMatch = 'first'>(
                 ? InnerMatch<T, 'last', void>
                 : (
                     K extends 'break'
-                        ? InnerMatch<T, 'break', 'void'>
+                        ? InnerMatch<T, 'break', void>
                         : (
                             K extends 'all'
-                                ? InnerMatch<T, 'all', 'void'>
+                                ? InnerMatch<T, 'all', void>
                                 : never
                         )
                 )
@@ -30,9 +30,15 @@ export const match = <T extends AllowedTo, K extends KindOfMatch = 'first'>(
     const innerMatch: InnerMatch<T, K, void> = ({
         kind: type as any,
         store: [],
-        to: <F, U extends MatchValue<T> = MatchValue<T>>(item: U, then: ThenType<T, F, U>, guard?: (item: T) => boolean) => {
-            innerMatch.store.push({ item, then: then as any, guard, not: false });
+        to: <F, U extends MatchValue<T> = MatchValue<T>>(item: U, then?: ThenType<T, F, U>) => {
+            innerMatch.store.push({ item, then: (then || true) as any, not: false });
             return innerMatch as any;
+        },
+        guard: condition => {
+            if (innerMatch.store.length > 0) {
+                innerMatch.store[innerMatch.store.length - 1].guard = condition;
+            }
+            return innerMatch;
         },
         not: () => {
             if (innerMatch.store.length > 0) {

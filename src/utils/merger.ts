@@ -1,6 +1,6 @@
 import { MatchValue, RandomConstant, ArrayMatchType } from "../types";
 import { Any } from "./comparators";
-import { seek } from "./utils";
+import { seek } from "./match";
 import { Identity } from "./identity";
 
 export const merge = <T, E extends MatchValue<T>>(item: T, matched: E): E extends RandomConstant ? T : E => {

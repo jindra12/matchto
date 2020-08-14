@@ -9,7 +9,7 @@ const date4 = new Date(2020, 6, 4, 16, 44, 37, 0);
 
 describe("Can match Date with string, numerical, regex and object representation", () => {
     test("Can match a Date to a Date", () => {
-        expect(match(dateR).to(dateR, date => date.getTime()).to(dateW, 'wrong').solve()).toBe(dateR.getTime());
+        expect(match(dateR).to(dateR, ({ item }) => item.getTime()).to(dateW, 'wrong').solve()).toBe(dateR.getTime());
     });
     test("Can match a Date array", () => {
         expect(match([date1, dateR]).to({ 'any': dateR.getTime() }, 'right').to({ 'any': dateW.getTime() }, 'wrong').solve()).toBe('right');
@@ -21,8 +21,8 @@ describe("Can match Date with string, numerical, regex and object representation
     });
     test("Can match a Date with guard condition", () => {
         expect(match(dateR)
-            .to(dateR.toISOString(), 'wrong', date => date.getTime() === dateW.getTime())
-            .to(dateR.toISOString(), 'right', date => date.getTime() === dateR.getTime()).solve()).toEqual('right');
+            .to(dateR.toISOString(), 'wrong').guard(date => date.getTime() === dateW.getTime())
+            .to(dateR.toISOString(), 'right').guard(date => date.getTime() === dateR.getTime()).solve()).toEqual('right');
     });
     test("Can match dates with comparator functions", () => {
         expect(match(date2)

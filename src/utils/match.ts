@@ -18,7 +18,7 @@ export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>,
             if (kind === 'break' && p.length > 0) {
                 throw Error('Cannot match more than one item on "break" mode.')
             }
-            p.push(typeof c.then === 'function' ? (c.then as any)(to, c.item, recursive(rematch), accessIdentity(identities)) : c.then);
+            p.push(typeof c.then === 'function' ? (c.then as any)({ item: to, matched: c.item, rematch: recursive(rematch), id: accessIdentity(identities) }) : c.then);
             if (c.cut) {
                 hasBeenCut = true;
             }
