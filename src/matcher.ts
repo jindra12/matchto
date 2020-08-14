@@ -34,6 +34,12 @@ export const match = <T extends AllowedTo, K extends KindOfMatch = 'first'>(
             }
             return innerMatch;
         },
+        cut: () => {
+            if (innerMatch.store.length > 0) {
+                innerMatch.store[innerMatch.store.length - 1].cut = true;
+            }
+            return innerMatch;
+        },
         solve: (type === 'all'
             ? () => matchAll(to, innerMatch.store, 'all', innerMatch)
             : () => matchAll(to, innerMatch.store, type || 'first', innerMatch)[0]) as any,

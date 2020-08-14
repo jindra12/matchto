@@ -1,8 +1,12 @@
 import { MatchValue, RandomConstant, ArrayMatchType } from "../types";
 import { Any } from "./comparators";
 import { seek } from "./utils";
+import { Identity } from "./identity";
 
 export const merge = <T, E extends MatchValue<T>>(item: T, matched: E): E extends RandomConstant ? T : E => {
+    if (matched instanceof Identity) {
+        return item as any;
+    }
     if (item === null || item instanceof Date) {
         return matched === Any ? item : matched as any;
     }

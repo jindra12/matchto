@@ -1,4 +1,4 @@
-import match, { Any, mod, less, moreOrEqual, lessOrEqual, between, more } from '../../src/index';
+import match, { Any, mod, less, moreOrEqual, lessOrEqual, between, more, id, merge } from '../../src/index';
 
 describe("Can match numeric arrays, objects and values", () => {
     test("Can match an item to an item", () => {
@@ -95,5 +95,45 @@ describe("Can match numeric arrays, objects and values", () => {
                 .to(Any, (item, _, rematch) => rematch([item[1], item[0] + item[1], item[2] - 1]))
                 .solve()
         ).toEqual([5, 8]);
+    });
+    test("Can use a red cut to change results of match", () => {
+        expect(
+            match(5, 'all')
+                .to(more(1), 1)
+                .to(more(2), 2)
+                .to(more(3), 3).cut()
+                .to(more(4), 4)
+                .solve()
+        ).toEqual(
+            [1, 2, 3]
+        );
+    });
+    test("Can use 'identity' to define prolog-like facts and queries", () => {
+        /* Example from: http://www.learnprolognow.org/lpnpage.php?pagetype=html&pageid=lpn-htmlse44
+           max(X,Y,Y)  :-  X  =<  Y,!.
+           max(X,Y,X). 
+         */
+        expect(
+            match([2, 5, 5], 'all')
+                .to([id("X"), id("Y"), id("Y")], true, item => item[0] <= item[1]).cut()
+                .to([id("X"), id("Y"), id("X")], true)
+                .to(Any, false)
+                .solve()
+                .find(result => Boolean(result))
+        ).toBe(true);
+        expect(
+            match([2, 3, 5], 'all')
+                .to([id("X"), id("Y"), id("Y")], true, item => item[0] <= item[1]).cut()
+                .to([id("X"), id("Y"), id("X")], true)
+                .to(Any, false)
+                .solve()[0]
+        ).toBe(false);
+    });
+    test("Can still merge even when using identity", () => {
+        expect(
+            match([1, 2, 2])
+                .to([Any, id("X"), id("X")], (item, matched) => merge(item, matched))
+                .solve()
+        ).toEqual([1, 2, 2])
     });
 });

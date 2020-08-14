@@ -1,6 +1,14 @@
+import { Identity } from "./utils/identity";
+
 export type KindOfMatch = 'break' | 'first' | 'last' | 'all';
 export type RandomConstant = 'any_random_constant'
-export type ThenType<T, E, F> = E | ((item: T, match: F, rematch: (item: Simplify<T>) => E extends unknown ? Simplify<T> : E) => E)
+export type ThenType<T, E, F> = E | ((
+	item: T,
+	match: F,
+	rematch: (item: Simplify<T>) => E extends unknown ? Simplify<T> : E,
+	id: (index: string) => any
+) => E);
+
 export type ArrayMatchType = 'any' | 'last' | 'some' | 'seek';
 export type ArrayMatch<T> = { 'any': MatchValue<T> } |
 { 'last': MatchValue<T>[] } |
@@ -9,7 +17,7 @@ export type ArrayMatch<T> = { 'any': MatchValue<T> } |
 	MatchValue<T>[];
 export type DateCompareType = Date | string | number;
 
-export type MatchStore<T, E> = Array<{ item: MatchValue<T>, then: ThenType<T, E, MatchValue<T>>, guard?: GuardMatch<T>, not?: boolean }>
+export type MatchStore<T, E> = Array<{ item: MatchValue<T>, then: ThenType<T, E, MatchValue<T>>, guard?: GuardMatch<T>, not?: boolean, cut?: boolean }>
 export type AllowedTo = [] | object | string | number | boolean;
 export type MatchValue<T> = (T extends null
 	? null
@@ -38,7 +46,7 @@ export type MatchValue<T> = (T extends null
 			)
 		)
 	)
-) | RandomConstant;
+) | RandomConstant | Identity;
 
 export type Simplify<T> = T extends boolean
 	? boolean
@@ -57,6 +65,7 @@ export type Simplify<T> = T extends boolean
 export interface InnerMatch<T extends AllowedTo, K extends KindOfMatch, E = void> {
 	to: <F, U extends MatchValue<T> = MatchValue<T>>(item: U, then: ThenType<T, F, U>, guard?: GuardMatch<T>) => InnerMatch<T, K, F | E>;
 	not: () => InnerMatch<T, K, E>;
+	cut: () => InnerMatch<T, K, E>;
 	store: MatchStore<T, E>;
 	solve: K extends 'all' ? () => E[] : () => E;
 	kind: K;
@@ -64,4 +73,8 @@ export interface InnerMatch<T extends AllowedTo, K extends KindOfMatch, E = void
 
 export interface GuardMatch<T> {
 	(item: T): boolean;
+}
+
+export interface IdentityMap {
+	[key: string]: Identity;
 }
