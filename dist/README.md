@@ -34,7 +34,7 @@ The library will not compare functions.
 expect(match(2).to(1, 'wrong').to(2, 'right').solve()).toBe('right');
 expect(match([1, 2, 3]).to({ 'any': 2 }, 'right').to({ 'any': 4 }, 'wrong').solve()).toBe('right'); // 'any' means match any of arrays elements
 expect(match([1, 2, 3]).to([Any, Any, 3], 'right').to([Any, Any, 4], 'wrong').solve()).toBe('right');
-expect(match({ one: 1, two: 2, three: { four: 4 } }).to({ one: 1 }, item => item.one).to({ one: 5 }, 'wrong').solve()).toBe(1);
+expect(match({ one: 1, two: 2, three: { four: 4 } }).to({ one: 1 }, ({ item }) => item.one).to({ one: 5 }, 'wrong').solve()).toBe(1);
 
 ```
 
@@ -47,8 +47,7 @@ expect(match('Hello').to(Any, 'right').to('World', 'wrong').solve()).toBe('right
 expect(match('Helllllo').to(/^Hel*o$/, 'right').to('World', 'wrong').solve()).toBe('right');
 expect(match('Helllllo').to(new RegExp('^Hel*o$'), 'right').to('World', 'wrong').solve()).toBe('right');
 
-// Third parameter is a guard condition
-expect(match('Wooorld').to(/W.*/, 'wrong', s => s.length === 3).to(/Wo*rld/, 'right', s => s === 'Wooorld').solve()).toBe('right');
+expect(match('Wooorld').to(/W.*/, 'wrong').guard(s => s.length === 3).to(/Wo*rld/, 'right').guard(s => s === 'Wooorld').solve()).toBe('right');
 
 ```
 
@@ -94,7 +93,7 @@ expect(match(testObject1).to({
         worksFromHome: Any,
         jobTitle: /P.*/
     }
-}, obj => obj.id).solve()).toBe(1);
+}, ({ item }) => item.id).solve()).toBe(1);
 
 ```
 
@@ -143,8 +142,8 @@ Also, optimized searching objects and arrays, won't do unnecessary compares.
 ```typescript
 
 expect(match([1, 2, 3], 'all')
-    .to({ any: 2 }, (_, matched) => matched.any)
-    .to({ any: 3 }, (_, matched) => matched.any).solve()
+    .to({ any: 2 }, ({ matched }) => matched.any)
+    .to({ any: 3 }, ({ matched }) => matched.any).solve()
 ).toEqual([2, 3]);
 
 ```
@@ -254,7 +253,7 @@ expect(match({
         nine: { 'seek': [5, Any, 7] },
         ten: { 'some': [Any, 5, 1, Any] },
     },
-}, (item, matched) => merge(item, matched)).solve()).toEqual({
+}, ({ item, matched }) => merge(item, matched)).solve()).toEqual({
     one: 1,
     two: { 'last': [6, 7] },
     three: { four: [1], five: { value: "6" } },
@@ -267,8 +266,8 @@ expect(match({
         ten: { some: [5, 5, 1, 2] }, // Not recommended to use 'some' when merging
     },
 });
-expect(match('anyString').to(Any, (item, matched) => merge(item, matched)).solve()).toBe('anyString');
-expect(match(1).to(Any, (item, matched) => merge(item, matched)).solve()).toBe(1);
+expect(match('anyString').to(Any, ({ item, matched }) => merge(item, matched)).solve()).toBe('anyString');
+expect(match(1).to(Any, ({ item, matched }) => merge(item, matched)).solve()).toBe(1);
 
 ```
 
@@ -282,15 +281,15 @@ test("Can use pattern matching to create factorial", () => {
     expect(
         match(5)
             .to(1, 1)
-            .to(Any, (item, _, rematch) => item * rematch(item - 1))
+            .to(Any, ({ item, rematch }) => item * rematch(item - 1))
             .solve()
     ).toBe(120);
 });
 test("Can use pattern matching to create fibonacci sequence", () => {
     expect(
         match([0, 1, 5])
-            .to([Any, Any, 0], item => [item[0], item[1]])
-            .to(Any, (item, _, rematch) => rematch([item[1], item[0] + item[1], item[2] - 1]))
+            .to([Any, Any, 0], ({ item }) => [item[0], item[1]])
+            .to(Any, ({ item, rematch }) => rematch([item[1], item[0] + item[1], item[2] - 1]))
             .solve()
     ).toEqual([5, 8]);
 });
@@ -312,31 +311,32 @@ test("Can use 'identity' to define prolog-like facts and queries", () => {
         */
     expect(
         match([2, 5, 5], 'all')
-            .to([id("X"), id("Y"), id("Y")], true, item => item[0] <= item[1]).cut()
-            .to([id("X"), id("Y"), id("X")], true)
+            .to([id("X"), id("Y"), id("Y")]).guard(item => item[0] <= item[1]).cut()
+            .to([id("X"), id("Y"), id("X")])
             .solve()
             .find(result => Boolean(result))
     ).toBe(true);
     expect(
         match([2, 3, 5], 'all')
-            .to([id("X"), id("Y"), id("Y")], true, item => item[0] <= item[1]).cut()
-            .to([id("X"), id("Y"), id("X")], true)
+            .to([id("X"), id("Y"), id("Y")]).guard(item => item[0] <= item[1]).cut()
+            .to([id("X"), id("Y"), id("X")])
             .solve()
     ).toEqual([]);
 });
 test("Can still merge even when using identity", () => {
     expect(
         match([1, 2, 2])
-            .to([Any, id("X"), id("X")], (item, matched) => merge(item, matched))
+            .to([Any, id("X"), id("X")], ({ item, matched }) => merge(item, matched))
             .solve()
     ).toEqual([1, 2, 2])
 });
 test("Can extract identity value", () => {
     expect(
         match([1, 2, 3, 3])
-            .to([1, id("Y"), id("X"), id("X")], (_, __, ___, id) => (id("X") + id("Y")) as number)
+            .to([1, id("Y"), id("X"), id("X")], ({ id }) => (id("X") + id("Y")) as number)
             .solve()
     ).toBe(5);
+});
 
 ```
 
@@ -344,6 +344,13 @@ Id will "define" a variable by the name of string param. You can access the valu
 
 
 Also, added comments to exported functions to be helpful.
+
+### Changes since 2.0.0
+
+Refactored .then() function parameters, placements of guard condition, added default 'true' as a return value from match.
+
+
+Updated examples above. Added unit test to check default .then() value and updated in-code documentation.
 
 
 ## Footer

@@ -66,7 +66,7 @@ describe("Can match numeric arrays, objects and values", () => {
         expect(match([1, 2, 3], 'all')
             .to({ any: 2 }, ({ matched }) => matched.any)
             .to({ any: 3 }, ({ matched }) => matched.any).solve()
-        ).toEqual([2, 3])
+        ).toEqual([2, 3]);
     });
     test("Can find ending sequence in an array", () => {
         expect(match([1, 2, 3, 4]).to({ 'last': [2, 3] }, 'wrong').to({ 'last': [3, 4] }, 'right').solve()).toBe('right');
@@ -155,5 +155,5 @@ describe("Can match numeric arrays, objects and values", () => {
                 .to(5)
                 .solve()
         ).toBeFalsy();
-    })
+    });
 });

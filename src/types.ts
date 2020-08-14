@@ -130,7 +130,7 @@ export interface InnerMatch<T extends AllowedTo, K extends KindOfMatch, E = void
 	/**
 	 * Execute the pattern match
 	 */
-	solve: K extends 'all' ? () => E[] : () => E;
+	solve: K extends 'all' ? () => Omit<E, 'void'>[] : () => E;
 	kind: K;
 };
 

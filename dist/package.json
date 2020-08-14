@@ -1,6 +1,6 @@
 {
   "name": "matchto",
-  "version": "1.10.0",
+  "version": "2.0.0",
   "description": "No dependency pattern matching library, able to work with numbers, arrays, strings, Dates or objects",
   "main": "index.js",
   "repository": "https://github.com/jindra12/matchto.git",
