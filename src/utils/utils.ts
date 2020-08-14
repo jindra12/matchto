@@ -4,25 +4,28 @@ import { recursive } from "./recursive";
 import { Identity, resolveIdentities, accessIdentity } from "./identity";
 
 
-export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>, kind: KindOfMatch, rematch: InnerMatch<T, any>) => (
-    kind === 'last' ? store.reverse() : store
-).reduce((p: E[], c) => {
-    let shouldContinue = true;
-    if (p.length === 1 && (c.cut || kind === 'last' || kind === 'first')) {
-        shouldContinue = false;
-    }
-    if (shouldContinue) {
+export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>, kind: KindOfMatch, rematch: InnerMatch<T, any>) => {
+    let hasBeenCut = false;
+    return (
+        kind === 'last' ? store.reverse() : store
+    ).reduce((p: E[], c) => {
+        if (hasBeenCut || (p.length === 1 && (kind === 'first' || kind === 'last'))) {
+            return p;
+        }
         const identities: IdentityMap = {};
         const matched = matcher(to, c.item, identities);
         if ((matched && !c.not || !matched && c.not) && (!c.guard || c.guard(to)) && resolveIdentities(identities)) {
             if (kind === 'break' && p.length > 0) {
                 throw Error('Cannot match more than one item on "break" mode.')
             }
-            p.push(typeof c.then === 'function' ? (c.then as any)(to, c.item, recursive(rematch), accessIdentity(identities)) : c.then);    
+            p.push(typeof c.then === 'function' ? (c.then as any)(to, c.item, recursive(rematch), accessIdentity(identities)) : c.then);
+            if (c.cut) {
+                hasBeenCut = true;
+            }
         }
-    }
-    return p;
-}, []);
+        return p;
+    }, []);
+};
 
 export const seek = <T extends AllowedTo>(to: T, item: MatchValue<T>): any[] | null => {
     const seekLength = (item as any).seek.length;
@@ -45,7 +48,10 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
             return true;
         }
         item.addValue(to);
-        identities[item.getId()] = item;
+        if (!identities[item.getId()]) {
+            identities[item.getId()] = [];
+        }
+        identities[item.getId()].push(item);
         return true;
     }
 

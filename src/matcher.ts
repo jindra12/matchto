@@ -1,6 +1,12 @@
 import { InnerMatch, KindOfMatch, MatchValue, AllowedTo, ThenType } from "./types";
 import { matchAll } from "./utils/utils";
 
+/**
+ * Pass a value you would like to perform pattern matching on
+ * @param to value to be matched
+ * @param type type of pattern matching, more in KindOfMatch docs.
+ * @returns builder pattern object to use for pattern matching
+ */
 export const match = <T extends AllowedTo, K extends KindOfMatch = 'first'>(
     to: T,
     type?: K,

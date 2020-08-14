@@ -297,6 +297,55 @@ test("Can use pattern matching to create fibonacci sequence", () => {
 
 ```
 
+### Changes since 1.10.0
+
+1) Can now use .cut() method, emulating Prolog behaviour: https://en.wikipedia.org/wiki/Cut_(logic_programming). Cut changes behaviour for 'break' and 'all' kinds.
+2) Added utility id() - Can now define variables inside patterns, similar to prolog facts. Example below.
+3) id() method will behave like "Any" when using the merger utility.
+
+```typescript
+
+test("Can use 'identity' to define prolog-like facts and queries", () => {
+    /* Example from: http://www.learnprolognow.org/lpnpage.php?pagetype=html&pageid=lpn-htmlse44
+        max(X,Y,Y)  :-  X  =<  Y,!.
+        max(X,Y,X). 
+        */
+    expect(
+        match([2, 5, 5], 'all')
+            .to([id("X"), id("Y"), id("Y")], true, item => item[0] <= item[1]).cut()
+            .to([id("X"), id("Y"), id("X")], true)
+            .solve()
+            .find(result => Boolean(result))
+    ).toBe(true);
+    expect(
+        match([2, 3, 5], 'all')
+            .to([id("X"), id("Y"), id("Y")], true, item => item[0] <= item[1]).cut()
+            .to([id("X"), id("Y"), id("X")], true)
+            .solve()
+    ).toEqual([]);
+});
+test("Can still merge even when using identity", () => {
+    expect(
+        match([1, 2, 2])
+            .to([Any, id("X"), id("X")], (item, matched) => merge(item, matched))
+            .solve()
+    ).toEqual([1, 2, 2])
+});
+test("Can extract identity value", () => {
+    expect(
+        match([1, 2, 3, 3])
+            .to([1, id("Y"), id("X"), id("X")], (_, __, ___, id) => (id("X") + id("Y")) as number)
+            .solve()
+    ).toBe(5);
+
+```
+
+Id will "define" a variable by the name of string param. You can access the value by using "id" parameter in then() function.
+
+
+Also, added comments to exported functions to be helpful.
+
+
 ## Footer
 
 If you notice any bugs or errors, do not hesitate to create an issue or a pull request!

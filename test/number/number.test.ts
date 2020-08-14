@@ -117,7 +117,6 @@ describe("Can match numeric arrays, objects and values", () => {
             match([2, 5, 5], 'all')
                 .to([id("X"), id("Y"), id("Y")], true, item => item[0] <= item[1]).cut()
                 .to([id("X"), id("Y"), id("X")], true)
-                .to(Any, false)
                 .solve()
                 .find(result => Boolean(result))
         ).toBe(true);
@@ -125,9 +124,8 @@ describe("Can match numeric arrays, objects and values", () => {
             match([2, 3, 5], 'all')
                 .to([id("X"), id("Y"), id("Y")], true, item => item[0] <= item[1]).cut()
                 .to([id("X"), id("Y"), id("X")], true)
-                .to(Any, false)
-                .solve()[0]
-        ).toBe(false);
+                .solve()
+        ).toEqual([]);
     });
     test("Can still merge even when using identity", () => {
         expect(
@@ -136,4 +134,11 @@ describe("Can match numeric arrays, objects and values", () => {
                 .solve()
         ).toEqual([1, 2, 2])
     });
+    test("Can extract identity value", () => {
+        expect(
+            match([1, 2, 3, 3])
+                .to([1, id("Y"), id("X"), id("X")], (_, __, ___, id) => (id("X") + id("Y")) as number)
+                .solve()
+        ).toBe(5);
+    })
 });

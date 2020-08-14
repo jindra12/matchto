@@ -12,7 +12,7 @@ export const merge = <T, E extends MatchValue<T>>(item: T, matched: E): E extend
     }
     if (Array.isArray(matched)) {
         const copyArray = [...matched];
-        return copyArray.map((part, i) => (part === Any && (item as any)[i] !== undefined)
+        return copyArray.map((part, i) => (item as any)[i] !== undefined
             ? merge((item as any)[i], part)
             : part
         ) as any;

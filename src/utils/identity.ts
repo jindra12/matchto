@@ -1,5 +1,9 @@
 import { IdentityMap } from "../types";
 
+/**
+ * Creates a new "variable" from within the pattern
+ * @param id name of the "variable". Can use this to access the new variable inside then() function
+ */
 export const id = (id: string) => new Identity(id);
 
 export class Identity {
@@ -16,13 +20,15 @@ export class Identity {
 
 export const resolveIdentities = (map: IdentityMap) => {
     const items = Object.values(map);
-    return items.reduce((p: boolean, c) => !p ? false : c.compare(items[0]), true);
+    return items.reduce((p: boolean, c) => !p ? false : resolveIdentityPart(c), true);
 };
 
-export const accessIdentity = (identities: IdentityMap) => (index: string) => identities[index]?.getValue();
+const resolveIdentityPart = (identities: Identity[]) => identities.reduce((p: boolean, c) => !p ? false : c.compare(identities[0]), true);
 
-const exact = (a: any, b: any): boolean => {
-    if (typeof a !== typeof b) {
+export const accessIdentity = (identities: IdentityMap) => (index: string) => identities[index] && identities[index][0]?.getValue();
+
+export const exact = (a: any, b: any): boolean => {
+    if (typeof a === typeof b) {
         if (a instanceof Array && b instanceof Array) {
             return a.length === b.length && a.reduce((p: boolean, c, i) => !p ? false : exact(c, b[i]), true);
         }
@@ -43,7 +49,7 @@ const exact = (a: any, b: any): boolean => {
                 if (a === null || b === null) {
                     return a === b;
                 }
-                return Object.entries(a).reduce((p: boolean, [key, value]) => !p ? false : exact(value, b[key]), false);
+                return Object.entries(a).reduce((p: boolean, [key, value]) => !p ? false : exact(value, b[key]), true);
         }
     }
     return false;
