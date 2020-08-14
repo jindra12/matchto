@@ -91,8 +91,8 @@ describe("Can match numeric arrays, objects and values", () => {
     test("Can use pattern matching to create fibonacci sequence", () => {
         expect(
             match([0, 1, 5])
-                .to([Any, Any, 0], item => [item[0], item[1]])
-                .to(Any, (item, _, rematch) => rematch([item[1], item[0] + item[1], item[2] - 1]))
+                .to([Any, Any, 0], ({ item }) => [item[0], item[1]])
+                .to(Any, ({ item, rematch }) => rematch([item[1], item[0] + item[1], item[2] - 1]))
                 .solve()
         ).toEqual([5, 8]);
     });
@@ -140,5 +140,20 @@ describe("Can match numeric arrays, objects and values", () => {
                 .to([1, id("Y"), id("X"), id("X")], ({ id }) => (id("X") + id("Y")) as number)
                 .solve()
         ).toBe(5);
+    });
+    test("Can match without specifying boolean 'then' value", () => {
+        expect(
+            match(3)
+                .to(4)
+                .to(5)
+                .to(3)
+                .solve()
+        ).toBe(true);
+        expect(
+            match(3)
+                .to(4)
+                .to(5)
+                .solve()
+        ).toBeFalsy();
     })
 });

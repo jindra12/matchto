@@ -113,7 +113,7 @@ export interface InnerMatch<T extends AllowedTo, K extends KindOfMatch, E = void
 	 * @param item pattern
 	 * @param then function or value to return/execute
 	 */
-	to: <F, U extends MatchValue<T> = MatchValue<T>>(item: U, then?: ThenType<T, F, U>) => InnerMatch<T, K, (F extends unknown ? true : F) | E>;
+	to: <F, U extends MatchValue<T> = MatchValue<T>>(item: U, then?: ThenType<T, F, U>) => InnerMatch<T, K, F | E>;
 	/**
 	 * Optional guard condition in last to() function call
 	 */

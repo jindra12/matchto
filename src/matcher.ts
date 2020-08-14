@@ -12,16 +12,16 @@ export const match = <T extends AllowedTo, K extends KindOfMatch = 'first'>(
     type?: K,
 ): (
     K extends 'first'
-        ? InnerMatch<T, 'first', void>
+        ? InnerMatch<T, 'first', (true | void)>
         : (
             K extends 'last'
-                ? InnerMatch<T, 'last', void>
+                ? InnerMatch<T, 'last', (true | void)>
                 : (
                     K extends 'break'
-                        ? InnerMatch<T, 'break', void>
+                        ? InnerMatch<T, 'break', (true | void)>
                         : (
                             K extends 'all'
-                                ? InnerMatch<T, 'all', void>
+                                ? InnerMatch<T, 'all', (true | void)>
                                 : never
                         )
                 )

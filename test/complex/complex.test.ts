@@ -85,7 +85,7 @@ describe("Can match a complex object", () => {
             dateOfBirth: new Date(1990, 0, 2).toISOString(),
             phone: { 'any': '+420' },
             workStatistics: null,
-        }, obj => obj.id).solve()).toBe(1);
+        }, ({ item }) => item.id).solve()).toBe(1);
         expect(match(testObject3).to({
             phone: [Any, '555 666 777'],
         }, 'wrong').to({
