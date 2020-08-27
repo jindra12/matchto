@@ -1,14 +1,24 @@
-import { MatchValue, RandomConstant, ArrayMatchType } from "../types";
+import { MatchValue, RandomConstant, ArrayMatchType, Simplify } from "../types";
 import { Any } from "./comparators";
 import { seek } from "./match";
 import { Identity } from "./identity";
 
-export const merge = <T, E extends MatchValue<T>>(item: T, matched: E): E extends RandomConstant ? T : E => {
-    if (matched instanceof Identity) {
+export const merge = <T, E extends MatchValue<T>>(item: T, matched: E): E extends (Function | Identity | RandomConstant | (new (...args: any[]) => Simplify<T> | RegExp)) ? T : E => {
+    if (matched instanceof Identity || matched instanceof RegExp) {
         return item as any;
     }
-    if (item === null || item instanceof Date) {
+    if (item === null) {
         return matched === Any ? item : matched as any;
+    }
+    if (
+        typeof item === 'string'
+            || typeof item === 'number'
+            || item instanceof Date
+    ) {
+        return matched === Any || matched instanceof Function ? item : matched as any;
+    }
+    if (typeof matched === 'function' && typeof item === 'object') {
+        return item as any;
     }
     if (Array.isArray(matched)) {
         const copyArray = [...matched];

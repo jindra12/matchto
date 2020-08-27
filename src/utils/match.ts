@@ -3,7 +3,6 @@ import { Any } from "./comparators";
 import { recursive } from "./recursive";
 import { Identity, resolveIdentities, accessIdentity } from "./identity";
 
-
 export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>, kind: KindOfMatch, rematch: InnerMatch<T, any>) => {
     let hasBeenCut = false;
     return (
@@ -131,6 +130,9 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
         case 'function':
             return true;
         case 'object':
+            if (typeof item === 'function') {
+                return to instanceof item;
+            }
             return Boolean(
                 typeof item === 'object' && Object
                     .entries(to)

@@ -80,7 +80,7 @@ export type MatchValue<T> = (T extends null
 						? string | number | Date | RegExp | ((value: Date) => boolean)
 						: (
 							T extends Object
-							? { [K in keyof T]?: MatchValue<T[K]> }
+							? { [K in keyof T]?: MatchValue<T[K]> } | (new (...args: any) => Simplify<T>)
 							: never
 						)
 					)

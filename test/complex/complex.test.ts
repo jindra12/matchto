@@ -1,4 +1,4 @@
-import match, { Any, merge } from "../../src";
+import match, { Any, merge, less } from "../../src";
 
 interface ComplexTestObject {
     id: number;
@@ -109,10 +109,10 @@ describe("Can match a complex object", () => {
             one: Any,
             two: { 'last': [Any, 7] },
             three: { four: Any, five: Any },
-            four: { date: /2020/ },
+            four: { date: new Date(2020, 6, 6) },
             five: Any,
             six: Any,
-            seven: [1, Any, 3],
+            seven: [1, Any, less(5)],
             eight: {
                 nine: { 'seek': [5, Any, 7] },
                 ten: { 'some': [Any, 5, 1, Any] },
@@ -121,7 +121,7 @@ describe("Can match a complex object", () => {
             one: 1,
             two: { 'last': [6, 7] },
             three: { four: [1], five: { value: "6" } },
-            four: { date: /2020/ },
+            four: { date: new Date(2020, 6, 6) },
             five: "simpleString",
             six: new Date(2020, 6, 6),
             seven: [1, 2, 3],
