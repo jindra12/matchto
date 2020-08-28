@@ -144,3 +144,25 @@ export interface GuardMatch<T> {
 export interface IdentityMap {
 	[key: string]: Identity[];
 }
+
+export type MergerType<T, E> = E extends (RandomConstant | Identity | RegExp | null | Function) 
+	? T
+	: (
+		E extends Array<infer U>
+			? (
+				T extends Array<infer U1>
+				? Array<MergerType<U1, U>>
+				: never
+			) : (
+				E extends (string | number | boolean | Date | bigint | symbol)
+				? E
+				: (
+					E extends object
+					? (
+						T extends object
+						? { [K in (keyof E & keyof T)]: MergerType<T[K], E[K]> }
+						: never
+					) : never
+				)
+			)
+	);

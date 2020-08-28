@@ -1,9 +1,9 @@
-import { MatchValue, RandomConstant, ArrayMatchType, Simplify } from "../types";
+import { MatchValue, ArrayMatchType, MergerType } from "../types";
 import { Any } from "./comparators";
 import { seek } from "./match";
 import { Identity } from "./identity";
 
-export const merge = <T, E extends MatchValue<T>>(item: T, matched: E): E extends (Function | Identity | RandomConstant | (new (...args: any[]) => Simplify<T> | RegExp)) ? T : E => {
+export const merge = <T, E extends MatchValue<T>>(item: T, matched: E): MergerType<T, E> => {
     if (matched instanceof Identity || matched instanceof RegExp) {
         return item as any;
     }

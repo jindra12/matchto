@@ -1,4 +1,4 @@
-import match, { merge } from "../../src";
+import match, { merge, Any } from "../../src";
 
 class Man {
     name: string;
@@ -61,6 +61,14 @@ describe("Can match to a class by instance type", () => {
                 two: new John(),
                 three: [new Bob(), new Woman('Anne')],
             }
-        }));
+        }).to({
+            one: {
+                two: Man,
+                three: [Bob, Any],
+            }
+        }, ({ item, matched }) => {
+            const merged = merge(item, matched);
+            return [merged.one.two.name, merged.one.three[0].name, merged.one.three[1].name];
+        }).solve()).toEqual(['John', 'Bob', 'Anne']);
     });
 });
