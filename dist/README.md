@@ -97,11 +97,8 @@ expect(match(testObject1).to({
 
 ```
 
-### Changes since 1.1.0
+### Example of utilities function pattern matching
 
-Can now use number comparison methods exported in module:
-
-Also, now the package is exported in ES5 Javascript.
 
 ```typescript
 
@@ -117,59 +114,7 @@ expect(match({ a: 2, b: 3, c: 4, d: { e: 5 } }).to({
     d: { e: lessOrEqual(6) }
 }, 'right').solve()).toBe('right');
 
-```
-
-### Changes since 1.2.0
-
-Can now seek a sequence of elements inside an array.
-
-Also, will not crash when comparing two incomparable values.
-
-```typescript
-
-expect(match([4, 5, { one: 7 }, 8, 7, 9])
-    .to({ seek: [{ one: 7 }, 7, 8] }, 'wrong')
-    .to({ seek: [5, { one: 7 }, 8] }, 'right').solve()).toBe('right');
-
-```
-
-### Changes since 1.3.0
-
-Can now find which exact match was found (useful especially in 'all' mode)
-
-Also, optimized searching objects and arrays, won't do unnecessary compares.
-
-```typescript
-
-expect(match([1, 2, 3], 'all')
-    .to({ any: 2 }, ({ matched }) => matched.any)
-    .to({ any: 3 }, ({ matched }) => matched.any).solve()
-).toEqual([2, 3]);
-
-```
-
-### Changes since 1.4.0
-
-Can now find ending sequence, or check if there are given elements in the array.
-
-Also, fixed bugs related to js type checks.
-
-```typescript
-
-expect(match([1, 2, 3, 4]).to({ 'last': [2, 3] }, 'wrong').to({ 'last': [3, 4] }, 'right').solve()).toBe('right');
-
-expect(match([1, 2, { one: 7 }, 9]).to({ 'some': [2, 7] }, 'wrong').to({ 'some': [{ one: 7 }, 1] }, 'right').solve()).toBe('right');
-
-```
-
-### Changes since 1.5.0
-
-Can now compare dates with 'before' and 'after' functions.
-
-Also, fixed a bug in 'more' function for numerical comparisons
-
-```typescript
-
+// Pattern matching with dates enhanced by functions
 expect(match(date2)
     .to(around(date3.toISOString(), date4.getTime()), 'wrong')
     .to(around(date1, date3), 'right').solve()).toBe('right');
@@ -188,16 +133,6 @@ expect(match({ d: date3 }, 'all')
     .to({ d: afterOrNow(date1) }, 'right')
     .to({ d: afterOrNow(date3) }, 'right').solve()).toEqual(['right', 'right']);
 
-```
-
-### Changes since 1.6.0
-
-Can now compare strings with functions similar to the numerical ones.
-
-Local compare is not supported yet. Also, minor typing refactor :) .
-
-```typescript
-
 expect(match('Carl', 'all')
     .to(less('Adam'), 'wrong')
     .to(more('Adam'), 'right')
@@ -206,11 +141,32 @@ expect(match('Carl', 'all')
 
 ```
 
-### Changes since 1.7.0
+### Example of advanced pattern matching in arrays
 
-Can use .not() to negate the matching function
+```typescript
 
-Fixed null comparison to respond to 'Any'
+expect(match([4, 5, { one: 7 }, 8, 7, 9])
+    .to({ seek: [{ one: 7 }, 7, 8] }, 'wrong')
+    .to({ seek: [5, { one: 7 }, 8] }, 'right').solve()).toBe('right');
+
+expect(match([1, 2, 3, 4]).to({ 'last': [2, 3] }, 'wrong').to({ 'last': [3, 4] }, 'right').solve()).toBe('right');
+
+expect(match([1, 2, { one: 7 }, 9]).to({ 'some': [2, 7] }, 'wrong').to({ 'some': [{ one: 7 }, 1] }, 'right').solve()).toBe('right');
+
+```
+
+### Example of pattern matching with getting which match was found
+
+```typescript
+
+expect(match([1, 2, 3], 'all')
+    .to({ any: 2 }, ({ matched }) => matched.any)
+    .to({ any: 3 }, ({ matched }) => matched.any).solve()
+).toEqual([2, 3]);
+
+```
+
+### Pattern matching using not() function
 
 ```typescript
 
@@ -221,13 +177,11 @@ expect(match({ one: 1, two: 2, three: [3, 4] })
 
 ```
 
-### Changes since 1.8.0
-
-Can now merge objects together when matching using 'Any'
-
-Fixed a bug with Date comparison function typing.
+### Example of using the util function 'merge' to create new objects based on patterns
 
 ```typescript
+expect(match('anyString').to(Any, ({ item, matched }) => merge(item, matched)).solve()).toBe('anyString');
+expect(match(1).to(Any, ({ item, matched }) => merge(item, matched)).solve()).toBe(1);
 
 expect(match({
     one: 1,
@@ -242,13 +196,13 @@ expect(match({
         ten: [5, 5, 3, 2, 1],
     },
 }).to({
-    one: Any,
+    one: Any, // Any will be converted by merger function into whatever value was passed into it
     two: { 'last': [Any, 7] },
     three: { four: Any, five: Any },
-    four: { date: /2020/ },
-    five: Any,
+    four: { date: new Date(2020, 6, 6) },
+    five: /simple/, // <--- regex will now be converted into "simpleString" by merger function
     six: Any,
-    seven: [1, Any, 3],
+    seven: [1, Any, less(5)], // <--- less(5) will now be converted into 3 by merger function
     eight: {
         nine: { 'seek': [5, Any, 7] },
         ten: { 'some': [Any, 5, 1, Any] },
@@ -257,7 +211,7 @@ expect(match({
     one: 1,
     two: { 'last': [6, 7] },
     three: { four: [1], five: { value: "6" } },
-    four: { date: /2020/ },
+    four: { date: new Date(2020, 6, 6) },
     five: "simpleString",
     six: new Date(2020, 6, 6),
     seven: [1, 2, 3],
@@ -266,14 +220,10 @@ expect(match({
         ten: { some: [5, 5, 1, 2] }, // Not recommended to use 'some' when merging
     },
 });
-expect(match('anyString').to(Any, ({ item, matched }) => merge(item, matched)).solve()).toBe('anyString');
-expect(match(1).to(Any, ({ item, matched }) => merge(item, matched)).solve()).toBe(1);
 
 ```
 
-### Changes since 1.9.0
-
-Can now create recursive pattern-matching to emulate end-tail recursion. Example:
+### Example of pattern matching using end-tail recursion
 
 ```typescript
 
@@ -296,11 +246,7 @@ test("Can use pattern matching to create fibonacci sequence", () => {
 
 ```
 
-### Changes since 1.10.0
-
-1) Can now use .cut() method, emulating Prolog behaviour: https://en.wikipedia.org/wiki/Cut_(logic_programming). Cut changes behaviour for 'break' and 'all' kinds.
-2) Added utility id() - Can now define variables inside patterns, similar to prolog facts. Example below.
-3) id() method will behave like "Any" when using the merger utility.
+### Example of using 'cut' function for red/green cuts and defining prolog-like variables
 
 ```typescript
 
@@ -340,18 +286,84 @@ test("Can extract identity value", () => {
 
 ```
 
-Id will "define" a variable by the name of string param. You can access the value by using "id" parameter in then() function.
+#### Use pattern matching to do instanceof operation
 
+```typescript
 
-Also, added comments to exported functions to be helpful.
+class Man {
+    name: string;
+    constructor(name: string) {
+        this.name = name;
+    }
+}
 
-### Changes since 2.0.0
+class Woman {
+    name: string;
+    constructor(name: string) {
+        this.name = name;
+    }
+}
 
-Refactored .then() function parameters, placements of guard condition, added default 'true' as a return value from match.
+class Bob extends Man {
+    constructor() {
+        super('Bob');
+    }
+}
 
+class John extends Man {
+    constructor() {
+        super('John');
+    }
+}
 
-Updated examples above. Added unit test to check default .then() value and updated in-code documentation.
+describe("Can match to a class by instance type", () => {
+    test("Can identify and match class instances", () => {
+        expect(match(new John())
+            .to(Bob, false)
+            .to(Woman, false)
+            .to((() => ({})) as any, false)
+            .to(John, true)
+            .solve()).toBe(true);
+        expect(match(new John())
+            .to(Bob, false)
+            .to(Woman, false)
+            .to(Man, true)
+            .solve()).toBe(true);        
+    });
+    test("Can identify class instances inside complex objects", () => {
+        expect(match({
+            one: new John(),
+            two: new Bob(),
+        }, 'all').to({
+            one: Man,
+        }, 'man').to({
+            two: Woman,
+        }, 'woman').to({
+            two: Bob,
+        }, 'Bob').to({
+            one: new Man('John'),
+        }, 'new').solve()).toEqual(['man', 'Bob', 'new']);
+    });
+    test("Can use merger function with matching over class instances", () => {
+        expect(match(new John()).to(Man, ({ item, matched }) => merge(item, matched).name).solve()).toBe('John')
+        expect(match({
+            one: {
+                two: new John(),
+                three: [new Bob(), new Woman('Anne')],
+            }
+        }).to({
+            one: {
+                two: Man,
+                three: [Bob, Any],
+            }
+        }, ({ item, matched }) => {
+            const merged = merge(item, matched);
+            return [merged.one.two.name, merged.one.three[0].name, merged.one.three[1].name];
+        }).solve()).toEqual(['John', 'Bob', 'Anne']);
+    });
+});
 
+```
 
 ## Footer
 

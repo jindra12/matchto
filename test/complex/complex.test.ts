@@ -110,7 +110,7 @@ describe("Can match a complex object", () => {
             two: { 'last': [Any, 7] },
             three: { four: Any, five: Any },
             four: { date: new Date(2020, 6, 6) },
-            five: Any,
+            five: /simple/,
             six: Any,
             seven: [1, Any, less(5)],
             eight: {
