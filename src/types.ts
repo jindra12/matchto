@@ -56,7 +56,7 @@ export type ArrayMatch<T> = { 'any': MatchValue<T> } |
 export type DateCompareType = Date | string | number;
 
 export type MatchStore<T, E> = Array<{ item: MatchValue<T>, then: ThenType<T, E, MatchValue<T>>, guard?: GuardMatch<T>, not?: boolean, cut?: boolean }>
-export type AllowedTo = [] | object | string | number | boolean;
+export type AllowedTo = [] | object | string | number | boolean | symbol | bigint;
 
 /**
  * Pattern matching value
@@ -65,23 +65,31 @@ export type MatchValue<T> = (T extends null
 	? null
 	: (
 		T extends string
-		? string | RegExp | ((value: string) => boolean)
+		? string | RegExp | ((value: string) => boolean) | StringConstructor
 		: (
 			T extends number
-			? number | ((value: number) => boolean)
+			? number | ((value: number) => boolean) | NumberConstructor
 			: (
-				T extends boolean
-				? boolean
+				T extends symbol
+				? symbol | SymbolConstructor
 				: (
-					T extends Array<infer U>
-					? ArrayMatch<U>
+					T extends bigint
+					? bigint | BigIntConstructor
 					: (
-						T extends Date
-						? string | number | Date | RegExp | ((value: Date) => boolean)
+						T extends boolean
+						? boolean | BooleanConstructor
 						: (
-							T extends Object
-							? { [K in keyof T]?: MatchValue<T[K]> } | (new (...args: any) => Simplify<T>)
-							: never
+							T extends Array<infer U>
+							? ArrayMatch<U> | ArrayConstructor
+							: (
+								T extends Date
+								? string | number | Date | RegExp | ((value: Date) => boolean) | DateConstructor
+								: (
+									T extends Object
+									? { [K in keyof T]?: MatchValue<T[K]> } | (new (...args: any) => Simplify<T>) | ObjectConstructor
+									: never
+								)
+							)
 						)
 					)
 				)
@@ -145,7 +153,21 @@ export interface IdentityMap {
 	[key: string]: Identity[];
 }
 
-export type MergerType<T, E> = E extends (RandomConstant | Identity | RegExp | null | Function) 
+type MergeAble = RandomConstant
+	| Identity
+	| RegExp
+	| null
+	| Function
+	| StringConstructor
+	| NumberConstructor
+	| BooleanConstructor
+	| DateConstructor
+	| SymbolConstructor
+	| BigIntConstructor
+	| ArrayConstructor
+	| ObjectConstructor;
+
+export type MergerType<T, E> = E extends MergeAble 
 	? T
 	: (
 		E extends Array<infer U>

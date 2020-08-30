@@ -1,10 +1,10 @@
 import { MatchValue, ArrayMatchType, MergerType } from "../types";
 import { Any } from "./comparators";
-import { seek } from "./match";
+import { seek, isVariableClass } from "./match";
 import { Identity } from "./identity";
 
 export const merge = <T, E extends MatchValue<T>>(item: T, matched: E): MergerType<T, E> => {
-    if (matched instanceof Identity || matched instanceof RegExp) {
+    if (matched instanceof Identity || matched instanceof RegExp || isVariableClass(matched)) {
         return item as any;
     }
     if (item === null) {

@@ -71,4 +71,78 @@ describe("Can match to a class by instance type", () => {
             return [merged.one.two.name, merged.one.three[0].name, merged.one.three[1].name];
         }).solve()).toEqual(['John', 'Bob', 'Anne']);
     });
+    test("Can match to primitives", () => {
+        type Arbitrary = { value: string | number };
+        const test: Arbitrary = { value: 5 };
+        expect(match(test, 'all')
+            .to({ value: Number }, '1')
+            .to({ value: String }, '2')
+            .to({ value: 5 }, '3')
+            .solve()).toEqual(['1', '3']);
+    });
+    test("Can identify an array or object based on construtor", () => {
+        type Arbitrary = { value: Array<Arbitrary> | ({ item: string }) };
+        const test: Arbitrary = {
+            value: [
+                {
+                    value: [
+                        {
+                            value: {
+                                item: 'First'
+                            }
+                        }
+                    ]
+                },
+                {
+                    value: {
+                        item: 'Second'
+                    }
+                }
+            ]
+        };
+        expect(match(test, 'all')
+            .to({ value: Array }, ({ item, rematch }) => (item.value as []).map(rematch)).guard((item) => (item.value as []).length > 0)
+            .to({ value: { item: String } }, ({ item }) => (item.value as { item: string }).item)
+            .solve()
+        ).toEqual([[['First'], 'Second']]);
+    });
+    test("Can match bigint and symbols", () => {
+        expect(match(Symbol('4'), 'all')
+            .to(Symbol('4'), '1')
+            .to(Symbol('5'), '2')
+            .to(Symbol, '3')
+            .solve()).toEqual(['1', '3']);
+        expect(match(BigInt(54), 'all')
+            .to(BigInt(54), '1')
+            .to(BigInt(55), '2')
+            .to(BigInt, '3')
+            .solve()).toEqual(['1', '3'])
+    });
+    test("Can merge primitive classes", () => {
+        const date = new Date();
+        expect(
+            match({
+                str: '1',
+                bool: true,
+                num: 1,
+                date,
+                object: {},
+                array: [],
+            }).to({
+                str: String,
+                bool: Boolean,
+                num: Number,
+                date: Date,
+                object: Object,
+                array: Array,
+            }, ({ item, matched }) => merge(item, matched)).solve()
+        ).toEqual({
+            str: '1',
+            bool: true,
+            num: 1,
+            date,
+            object: {},
+            array: [],
+        });
+    });
 });

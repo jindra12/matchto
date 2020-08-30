@@ -286,7 +286,7 @@ test("Can extract identity value", () => {
 
 ```
 
-#### Use pattern matching to do instanceof operation
+### Use pattern matching to do instanceof operation
 
 ```typescript
 
@@ -361,6 +361,52 @@ describe("Can match to a class by instance type", () => {
             return [merged.one.two.name, merged.one.three[0].name, merged.one.three[1].name];
         }).solve()).toEqual(['John', 'Bob', 'Anne']);
     });
+});
+
+```
+
+### Can match based on primitive values by using constructors
+
+```typescript
+
+type Arbitrary = { value: string | number };
+const test: Arbitrary = { value: 5 };
+expect(match(test, 'all')
+    .to({ value: Number }, '1')
+    .to({ value: String }, '2')
+    .to({ value: 5 }, '3')
+    .solve()).toEqual(['1', '3']);
+
+```
+
+### Can merge item with matched value by using constructors
+
+```typescript
+
+const date = new Date();
+expect(
+    match({
+        str: '1',
+        bool: true,
+        num: 1,
+        date,
+        object: {},
+        array: [],
+    }).to({
+        str: String,
+        bool: Boolean,
+        num: Number,
+        date: Date,
+        object: Object,
+        array: Array,
+    }, ({ item, matched }) => merge(item, matched)).solve()
+).toEqual({
+    str: '1',
+    bool: true,
+    num: 1,
+    date,
+    object: {},
+    array: [],
 });
 
 ```

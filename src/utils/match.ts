@@ -3,6 +3,19 @@ import { Any } from "./comparators";
 import { recursive } from "./recursive";
 import { Identity, resolveIdentities, accessIdentity } from "./identity";
 
+const variableClasses = [
+    String,
+    Number,
+    Boolean,
+    BigInt,
+    Symbol,
+    Date,
+    Object,
+    Array,
+];
+
+export const isVariableClass = (item: any) => variableClasses.find(c => c === item);
+
 export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>, kind: KindOfMatch, rematch: InnerMatch<T, any>) => {
     let hasBeenCut = false;
     return (
@@ -42,6 +55,14 @@ export const seek = <T extends AllowedTo>(to: T, item: MatchValue<T>): any[] | n
 }
 
 const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: IdentityMap | null): boolean => {
+    if (item === Any) {
+        return true;
+    }
+    
+    if (to === null) {
+        return item === null;
+    }
+
     if (item instanceof Identity) {
         if (!identities) {
             return true;
@@ -54,15 +75,13 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
         return true;
     }
 
-    if (item === Any) {
-        return true;
-    }
-    
-    if (to === null) {
-        return item === null;
-    }
-
     if (to instanceof Date) {
+        if (item === Date) {
+            return true;
+        }
+        if (isVariableClass(item)) {
+            return false;
+        }
         if (item instanceof Date) {
             return to.getTime() === item.getTime();
         }
@@ -82,6 +101,12 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
     }
 
     if (Array.isArray(to)) {
+        if (item === Array) {
+            return true;
+        }
+        if (isVariableClass(item)) {
+            return false;
+        }
         if (Array.isArray(item)) {
             return to
                 .reduce((p, c, i) => !p ? false : (item[i] === undefined ? true : matcher(c, item[i], identities)), true);
@@ -106,6 +131,12 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
     }
     switch (typeof to) {
         case 'string':
+            if (item === String) {
+                return true;
+            }
+            if (isVariableClass(item)) {
+                return false;
+            }
             if (typeof item === 'function') {
                 return (item as any)(to);
             }
@@ -117,6 +148,12 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
             }
             return false;
         case 'number':
+            if (item === Number) {
+                return true;
+            }
+            if (isVariableClass(item)) {
+                return false;
+            }
             if (typeof item === 'number') {
                 return to === item as any;
             } else if (typeof item === 'function') {
@@ -124,12 +161,22 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
             }
             return false;
         case 'boolean':
+            return item === Boolean || (item as any) === to;
         case 'bigint':
+            return item === BigInt || (item as BigInt)?.toString() === to?.toString();
+        case 'symbol':
+            return item === Symbol || to?.toString() === item?.toString();
         case 'undefined':
             return to === item as any;
         case 'function':
             return true;
         case 'object':
+            if (item === Object) {
+                return true;
+            }
+            if (isVariableClass(item)) {
+                return false;
+            }
             if (typeof item === 'function') {
                 return to instanceof item;
             }
