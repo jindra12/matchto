@@ -156,4 +156,22 @@ describe("Can match numeric arrays, objects and values", () => {
                 .solve()
         ).toBeFalsy();
     });
+    test("Will match arrays of different sizes correctly", () => {
+        expect(
+            match([1], 'all')
+                .to([1, 2, 3], '1')
+                .to([1], '2')
+                .to([], '3')
+                .solve()
+        ).toEqual(['2', '3']);
+    });
+    test("Won't match objects with patterns that have extra properties", () => {
+        expect(
+            match({ a: 1 }, 'all')
+                .to({ a: 1, b: 2, c: 3 }, '1')
+                .to({ a: 1 }, '2')
+                .to({}, '3')
+                .solve()
+        ).toEqual(['2', '3']);
+    });
 });

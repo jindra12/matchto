@@ -149,8 +149,10 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
                     return false;
                 }
                 if (Array.isArray(item)) {
-                    return to
-                        .reduce((p: boolean, c, i) => !p ? false : (item[i] === undefined ? true : matcher(c, item[i], identities)), true);
+                    return item.length <= to.length && to
+                        .reduce(
+                            (p: boolean, c, i) => !p ? false : (item[i] === undefined ? true : matcher(c, item[i], identities)), true
+                        );
                 }
                 if (typeof item === 'object' && Boolean(item)) {
                     const key = Object.keys(item!)[0] as ArrayMatchType;
@@ -161,7 +163,11 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
                             return seek(to, item) !== null;
                         case 'last':
                             const reversedItem = [...(item as any).last].reverse();
-                            return [...to].reverse().reduce((p, part, i) => !p ? false : (i >= reversedItem.length || matcher(part, reversedItem[i], identities)), true);
+                            return reversedItem.length <= to.length && [...to]
+                                .reverse()
+                                .reduce(
+                                    (p, part, i) => !p ? false : (i >= reversedItem.length || matcher(part, reversedItem[i], identities)), true
+                                );
                         case 'some':
                             return (item as any).some.reduce((p: boolean, c: any) => !p ? false : matcher(to, { 'any': c } as any, identities), true);
                         default:
@@ -179,15 +185,19 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
             if (typeof item === 'function') {
                 return to instanceof item;
             }
-            return Boolean(
-                (typeof item === 'object' && Boolean(item)) && Object
-                    .entries(to as any)
-                    .reduce(
-                        (p, [key, value]) => !p
-                            ? false
-                            : ((item as any)[key] === undefined || (matcher as any)(value, (item as any)[key], identities)),
-                        true,
-                    )
-                );
+            if (typeof item === 'object' && Boolean(item)) {
+                const itemKeys = Object.keys(item as any);
+                const toEntries = Object.entries(to as any);
+                if (toEntries.length >= itemKeys.length) {
+                    return Boolean(toEntries.reduce(
+                            (p, [key, value]) => !p
+                                ? false
+                                : ((item as any)[key] === undefined || (matcher as any)(value, (item as any)[key], identities)),
+                            true,
+                        )
+                    );
+                }
+            }
+            return false;
     }
 };
