@@ -149,6 +149,7 @@ describe("Can match a complex object", () => {
         expect(match(arrays[2]).to([1, Any, 3], '1').to(null, '2').solve()).toBe('2');
         expect(match(arrays[3]).to([1, Any, 3], '1').to(undefined, '2').solve()).toBe('2');
         expect(match(null).to(Any).solve()).toBe(true);
+        expect(match(undefined).to(Any).solve()).toBe(true);
     });
     test("Will not break when merging null/undefined", () => {
         const value: undefined | null | string = null;
