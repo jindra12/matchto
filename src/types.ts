@@ -56,13 +56,13 @@ export type ArrayMatch<T> = { 'any': MatchValue<T> } |
 export type DateCompareType = Date | string | number;
 
 export type MatchStore<T, E> = Array<{ item: MatchValue<T>, then: ThenType<T, E, MatchValue<T>>, guard?: GuardMatch<T>, not?: boolean, cut?: boolean }>
-export type AllowedTo = [] | object | string | number | boolean | symbol | bigint;
+export type AllowedTo = [] | object | string | number | boolean | symbol | bigint | null | undefined;
 
 /**
  * Pattern matching value
  */
-export type MatchValue<T> = (T extends null
-	? null
+export type MatchValue<T> = T extends (null | undefined)
+	? (null | undefined)
 	: (
 		T extends string
 		? string | RegExp | ((value: string) => boolean) | StringConstructor
@@ -95,8 +95,7 @@ export type MatchValue<T> = (T extends null
 				)
 			)
 		)
-	)
-) | RandomConstant | Identity;
+	) | RandomConstant | Identity;
 
 export type Simplify<T> = T extends boolean
 	? boolean

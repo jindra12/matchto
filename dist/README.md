@@ -60,6 +60,23 @@ expect(match({ date: dateR }, 'all').to({ date: /2020/ }, 'right').to({ date: /2
 
 ```
 
+### Example of null/undefined checks
+
+```typescript
+
+const arrays = [
+    [1, 2, 3],
+    [4, 5, 6],
+    null,
+    undefined
+];
+expect(match(arrays[0]).to(undefined, '1').to([1, Any, 3], '2').solve()).toBe('2');
+expect(match(arrays[1]).to(null, '1').to([4, Any, 6], '2').solve()).toBe('2');
+expect(match(arrays[2]).to([1, Any, 3], '1').to(null, '2').solve()).toBe('2');
+expect(match(arrays[3]).to([1, Any, 3], '1').to(undefined, '2').solve()).toBe('2');
+
+```
+
 ### Example of complex object matching
 
 ```typescript

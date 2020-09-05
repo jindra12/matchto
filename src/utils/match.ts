@@ -74,61 +74,6 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
         identities[item.getId()].push(item);
         return true;
     }
-
-    if (to instanceof Date) {
-        if (item === Date) {
-            return true;
-        }
-        if (isVariableClass(item)) {
-            return false;
-        }
-        if (item instanceof Date) {
-            return to.getTime() === item.getTime();
-        }
-        if (item instanceof RegExp) {
-            return item.test(to.toISOString());
-        }
-        if (typeof item === 'string') {
-            return item === to.toISOString();
-        }
-        if (typeof item === 'number') {
-            return item === to.getTime();
-        }
-        if (typeof item === 'function') {
-            return (item as any)(to);
-        }
-        return false;
-    }
-
-    if (Array.isArray(to)) {
-        if (item === Array) {
-            return true;
-        }
-        if (isVariableClass(item)) {
-            return false;
-        }
-        if (Array.isArray(item)) {
-            return to
-                .reduce((p, c, i) => !p ? false : (item[i] === undefined ? true : matcher(c, item[i], identities)), true);
-        }
-        if (typeof item === 'object') {
-            const key = Object.keys(item)[0] as ArrayMatchType;
-            switch (key) {
-                case 'any':
-                    return to.find(part => matcher(part, (item as any).any, identities));
-                case 'seek':
-                    return seek(to, item) !== null;
-                case 'last':
-                    const reversedItem = [...(item as any).last].reverse();
-                    return [...to].reverse().reduce((p, part, i) => !p ? false : (i >= reversedItem.length || matcher(part, reversedItem[i], identities)), true);
-                case 'some':
-                    return (item as any).some.reduce((p: boolean, c: any) => !p ? false : matcher(to, { 'any': c } as any, identities), true);
-                default:
-                    return false;
-            }
-        }
-        return false;
-    }
     switch (typeof to) {
         case 'string':
             if (item === String) {
@@ -171,6 +116,60 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
         case 'function':
             return true;
         case 'object':
+            if (to instanceof Date) {
+                if (item === Date) {
+                    return true;
+                }
+                if (isVariableClass(item)) {
+                    return false;
+                }
+                if (item instanceof Date) {
+                    return to.getTime() === item.getTime();
+                }
+                if (item instanceof RegExp) {
+                    return item.test(to.toISOString());
+                }
+                if (typeof item === 'string') {
+                    return item === to.toISOString();
+                }
+                if (typeof item === 'number') {
+                    return item === to.getTime();
+                }
+                if (typeof item === 'function') {
+                    return (item as any)(to);
+                }
+                return false;
+            }
+        
+            if (Array.isArray(to)) {
+                if (item === Array) {
+                    return true;
+                }
+                if (isVariableClass(item)) {
+                    return false;
+                }
+                if (Array.isArray(item)) {
+                    return to
+                        .reduce((p: boolean, c, i) => !p ? false : (item[i] === undefined ? true : matcher(c, item[i], identities)), true);
+                }
+                if (typeof item === 'object' && Boolean(item)) {
+                    const key = Object.keys(item!)[0] as ArrayMatchType;
+                    switch (key) {
+                        case 'any':
+                            return Boolean(to.find(part => (matcher as any)(part, (item as any).any, identities)));
+                        case 'seek':
+                            return seek(to, item) !== null;
+                        case 'last':
+                            const reversedItem = [...(item as any).last].reverse();
+                            return [...to].reverse().reduce((p, part, i) => !p ? false : (i >= reversedItem.length || matcher(part, reversedItem[i], identities)), true);
+                        case 'some':
+                            return (item as any).some.reduce((p: boolean, c: any) => !p ? false : matcher(to, { 'any': c } as any, identities), true);
+                        default:
+                            return false;
+                    }
+                }
+                return false;
+            }
             if (item === Object) {
                 return true;
             }
@@ -181,12 +180,12 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
                 return to instanceof item;
             }
             return Boolean(
-                typeof item === 'object' && Object
-                    .entries(to)
+                (typeof item === 'object' && Boolean(item)) && Object
+                    .entries(to as any)
                     .reduce(
                         (p, [key, value]) => !p
                             ? false
-                            : ((item as any)[key] === undefined || matcher(value, (item as any)[key], identities)),
+                            : ((item as any)[key] === undefined || (matcher as any)(value, (item as any)[key], identities)),
                         true,
                     )
                 );

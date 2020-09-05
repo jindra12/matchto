@@ -133,4 +133,34 @@ describe("Can match a complex object", () => {
         expect(match('anyString').to(Any, ({ item, matched }) => merge(item, matched)).solve()).toBe('anyString');
         expect(match(1).to(Any, ({ item, matched }) => merge(item, matched)).solve()).toBe(1);
     });
+    test("Can do null/undefined checks", () => {
+        const value: undefined | null | string = null;
+        const value1: undefined | null | string = undefined;
+        expect(match(value).to(undefined, '1').to(null, '2').solve()).toBe('2');
+        expect(match(value1).to(null, '2').to(undefined, '1').solve()).toBe('1');
+        const arrays = [
+            [1, 2, 3],
+            [4, 5, 6],
+            null,
+            undefined
+        ];
+        expect(match(arrays[0]).to(undefined, '1').to([1, Any, 3], '2').solve()).toBe('2');
+        expect(match(arrays[1]).to(null, '1').to([4, Any, 6], '2').solve()).toBe('2');
+        expect(match(arrays[2]).to([1, Any, 3], '1').to(null, '2').solve()).toBe('2');
+        expect(match(arrays[3]).to([1, Any, 3], '1').to(undefined, '2').solve()).toBe('2');
+    });
+    test("Will not break when merging null/undefined", () => {
+        const value: undefined | null | string = null;
+        const value1: undefined | null | string = undefined;
+        expect(match(value).to(undefined, '1').to(null, ({ item, matched }) => merge(item, matched)).solve()).toBe(null);
+        expect(match(value1).to(null, '2').to(undefined, ({ item, matched }) => merge(item, matched)).solve()).toBe(undefined);
+        const arrays = [
+            [1, 2, 3],
+            [4, 5, 6],
+            null,
+            undefined
+        ];
+        expect(match(arrays[2]).to([1, Any, 3], '1').to(null, ({ item, matched }) => merge(item, matched)).solve()).toBe(null);
+        expect(match(arrays[3]).to([1, Any, 3], '1').to(undefined, ({ item, matched }) => merge(item, matched)).solve()).toBe(undefined);
+    })
 });
