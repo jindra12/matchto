@@ -61,7 +61,7 @@ export type AllowedTo = [] | object | string | number | boolean | symbol | bigin
 /**
  * Pattern matching value
  */
-export type MatchValue<T> = T extends (null | undefined)
+export type MatchValue<T> = (T extends (null | undefined)
 	? (null | undefined)
 	: (
 		T extends string
@@ -95,7 +95,7 @@ export type MatchValue<T> = T extends (null | undefined)
 				)
 			)
 		)
-	) | RandomConstant | Identity;
+	)) | RandomConstant | Identity;
 
 export type Simplify<T> = T extends boolean
 	? boolean
