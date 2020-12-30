@@ -166,7 +166,7 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
                             return reversedItem.length <= to.length && [...to]
                                 .reverse()
                                 .reduce(
-                                    (p, part, i) => !p ? false : (i >= reversedItem.length || matcher(part, reversedItem[i], identities)), true
+                                    (p, part, i) => !p ? false : (i >= reversedItem.length || matcher(part, reversedItem[i], identities)) as any, true
                                 );
                         case 'some':
                             return (item as any).some.reduce((p: boolean, c: any) => !p ? false : matcher(to, { 'any': c } as any, identities), true);
@@ -188,6 +188,10 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
             if (typeof item === 'object' && Boolean(item)) {
                 const itemKeys = Object.keys(item as any);
                 const toEntries = Object.entries(to as any);
+                const toKeys = Object.keys(to as any);
+                if (!itemKeys.every(key => toKeys.includes(key))) {
+                    return false;
+                }
                 if (toEntries.length >= itemKeys.length) {
                     return Boolean(toEntries.reduce(
                             (p, [key, value]) => !p

@@ -164,5 +164,8 @@ describe("Can match a complex object", () => {
         ];
         expect(match(arrays[2]).to([1, Any, 3], '1').to(null, ({ item, matched }) => merge(item, matched)).solve()).toBe(null);
         expect(match(arrays[3]).to([1, Any, 3], '1').to(undefined, ({ item, matched }) => merge(item, matched)).solve()).toBe(undefined);
-    })
+    });
+    test("Will not match wrong keys", () => {
+        expect(match({ a: 6 }).to({ b: 6 } as any).solve()).toBeFalsy();
+    });
 });
