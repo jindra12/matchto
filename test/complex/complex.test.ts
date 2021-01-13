@@ -168,4 +168,16 @@ describe("Can match a complex object", () => {
     test("Will not match wrong keys", () => {
         expect(match({ a: 6 }).to({ b: 6 } as any).solve()).toBeFalsy();
     });
+    test("Will match primitive classes correctly", () => {
+        expect(match(new String("Hello?")).to(String).solve()).toBeTruthy();
+        expect(match(new String("Hello?")).to(Object).solve()).toBeTruthy();
+        expect(match(new String("")).to(String).solve()).toBeTruthy();
+        expect(match(new String("")).to(Number as any).solve()).toBeFalsy();
+        expect(match(new Number).to(Object).solve()).toBeTruthy();
+        expect(match(new Number).to(Number).solve()).toBeTruthy();
+        expect(match(new Number).to(String as any).solve()).toBeFalsy();
+        expect(match(new Boolean).to(Boolean).solve()).toBeTruthy();
+        expect(match(new Boolean).to(Object).solve()).toBeTruthy();
+        expect(match(new Boolean).to(String as any).solve()).toBeFalsy();
+    })
 });

@@ -179,9 +179,6 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
             if (item === Object) {
                 return true;
             }
-            if (isVariableClass(item)) {
-                return false;
-            }
             if (typeof item === 'function') {
                 return to instanceof item;
             }
