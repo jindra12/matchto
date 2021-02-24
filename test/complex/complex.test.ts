@@ -1,5 +1,14 @@
 import match, { Any, merge, less } from "../../src";
 
+const functorFactory = <T, E>(one: T, two: E): T & E => {
+    const anyO = one as any;
+    const anyE = two as any;
+    Object.keys(anyE).forEach(key => {
+        anyO[key] = anyE[key];
+    });
+    return anyO;
+};
+
 interface ComplexTestObject {
     id: number;
     name: string;
@@ -179,5 +188,12 @@ describe("Can match a complex object", () => {
         expect(match(new Boolean).to(Boolean).solve()).toBeTruthy();
         expect(match(new Boolean).to(Object).solve()).toBeTruthy();
         expect(match(new Boolean).to(String as any).solve()).toBeFalsy();
-    })
+    });
+    test("Can match functors to each other", () => {
+        const f1 = functorFactory(() => 5, { a: 5, b: 6 });
+        const f2 = functorFactory(() => 6, { b: 6 });
+        const f3 = functorFactory(() => 7, { b: 7 });
+        expect(match(f1).to(f2).solve()).toBeTruthy();
+        expect(match(f3).to(f2).solve()).toBeFalsy();
+    });
 });

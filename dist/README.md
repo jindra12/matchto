@@ -428,6 +428,22 @@ expect(
 
 ```
 
+### Can use plugins to further customize pattern matching -- CAUTION: EXPERIMENTAL, USE AT OWN RISK
+
+If a plugin function returns true, match is valid. If false, invalid. If undefined, match continues as-is.
+
+```typescript
+
+expect(match({
+    a: 5,
+    b: 7,
+    c: {
+        d: [1],
+    }
+}, "first", [(a, b) => (Array.isArray(a) && Array.isArray(b) ? true : undefined)]).to({ c: { d: [5] } }).solve()).toBeTruthy();
+
+```
+
 ## Footer
 
 If you notice any bugs or errors, do not hesitate to create an issue or a pull request!

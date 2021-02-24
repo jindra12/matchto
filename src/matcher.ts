@@ -5,11 +5,13 @@ import { matchAll } from "./utils/match";
  * Pass a value you would like to perform pattern matching on
  * @param to value to be matched
  * @param type type of pattern matching, more in KindOfMatch docs.
+ * @param plugins any custom functions which will trigger every time during recursive match. They can return true/false/undefined - undefined means that the rest of algo runs.
  * @returns builder pattern object to use for pattern matching
  */
 export const match = <T extends AllowedTo, K extends KindOfMatch = 'first'>(
     to: T,
     type?: K,
+    plugins?: Array<(a: any, b: any) => (boolean | undefined)>,
 ): (
     K extends 'first'
         ? InnerMatch<T, 'first', void>
@@ -53,8 +55,8 @@ export const match = <T extends AllowedTo, K extends KindOfMatch = 'first'>(
             return innerMatch;
         },
         solve: (type === 'all'
-            ? () => matchAll(to, innerMatch.store, 'all', innerMatch)
-            : () => matchAll(to, innerMatch.store, type || 'first', innerMatch)[0]) as any,
+            ? () => matchAll(to, innerMatch.store, 'all', innerMatch, plugins || [])
+            : () => matchAll(to, innerMatch.store, type || 'first', innerMatch, plugins || [])[0]) as any,
     });
     return innerMatch as any;
 };

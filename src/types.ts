@@ -37,6 +37,11 @@ export interface ThenParams<T, E, F> {
 }
 
 /**
+ * Custom non-typed function for resolving matches. If return value undefined, match continues as-is.
+ */
+export type PluginFn = (a: any, b: any) => (boolean | undefined);
+
+/**
  * Function/value to be returned/executed when matching succeeds
  * @param params Results of pattern matching
  */

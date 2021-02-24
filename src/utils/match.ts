@@ -1,4 +1,4 @@
-import { AllowedTo, MatchValue, MatchStore, KindOfMatch, ArrayMatchType, InnerMatch, IdentityMap } from "../types";
+import { AllowedTo, MatchValue, MatchStore, KindOfMatch, ArrayMatchType, InnerMatch, IdentityMap, PluginFn } from "../types";
 import { Any } from "./comparators";
 import { recursive } from "./recursive";
 import { Identity, resolveIdentities, accessIdentity } from "./identity";
@@ -16,7 +16,7 @@ const variableClasses = [
 
 export const isVariableClass = (item: any) => variableClasses.find(c => c === item);
 
-export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>, kind: KindOfMatch, rematch: InnerMatch<T, any>) => {
+export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>, kind: KindOfMatch, rematch: InnerMatch<T, any>, plugins: PluginFn[]) => {
     let hasBeenCut = false;
     return (
         kind === 'last' ? store.reverse() : store
@@ -25,7 +25,7 @@ export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>,
             return p;
         }
         const identities: IdentityMap = {};
-        const matched = matcher(to, c.item, identities);
+        const matched = matcher(to, c.item, identities, plugins);
         if ((matched && !c.not || !matched && c.not) && (!c.guard || c.guard(to)) && resolveIdentities(identities)) {
             if (kind === 'break' && p.length > 0) {
                 throw Error('Cannot match more than one item on "break" mode.')
@@ -39,13 +39,13 @@ export const matchAll = <T extends AllowedTo, E>(to: T, store: MatchStore<T, E>,
     }, []);
 };
 
-export const seek = <T extends AllowedTo>(to: T, item: MatchValue<T>): any[] | null => {
+export const seek = <T extends AllowedTo>(to: T, item: MatchValue<T>, plugins: PluginFn[]): any[] | null => {
     const seekLength = (item as any).seek.length;
     for (let i = 0; i < (to as []).length; i++) {
         const subArray: any[] = (to as []).slice(i, i + seekLength) as any;
         if (subArray.length === seekLength) {
             const res = subArray
-                .reduce((p, c, j) => !p ? false : matcher(c, (item as any).seek[j], null), true);
+                .reduce((p, c, j) => !p ? false : matcher(c, (item as any).seek[j], null, plugins), true);
             if (res) {
                 return subArray;
             }
@@ -54,7 +54,16 @@ export const seek = <T extends AllowedTo>(to: T, item: MatchValue<T>): any[] | n
     return null;
 }
 
-const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: IdentityMap | null): boolean => {
+const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: IdentityMap | null, plugins: PluginFn[]): boolean => {
+    for (let i = 0; i < plugins.length; i++) {
+        const pluginResolve = plugins[i](to, item);
+        if (pluginResolve === true) {
+            return true;
+        }
+        if (pluginResolve === false) {
+            return false;
+        }
+    }
     if (item === Any) {
         return true;
     }
@@ -114,6 +123,19 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
         case 'undefined':
             return to === item as any;
         case 'function':
+            const toKeys = Object.keys(to);
+            const itemKeys = typeof item === "object" || typeof item === "function" ? Object.keys(item as any) : [];
+            if (toKeys.length && itemKeys.length) {
+                const functorPartTo = toKeys.reduce((p: any, c) => {
+                    p[c] = (to as any)[c];
+                    return p;
+                }, {});
+                const functorPartItem = itemKeys.reduce((p: any, c) => {
+                    p[c] = (item as any)[c];
+                    return p;
+                }, {});
+                return matcher(functorPartTo, functorPartItem, identities, plugins);
+            } 
             return true;
         case 'object':
             if (to instanceof Date) {
@@ -151,25 +173,25 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
                 if (Array.isArray(item)) {
                     return item.length <= to.length && to
                         .reduce(
-                            (p: boolean, c, i) => !p ? false : (item[i] === undefined ? true : matcher(c, item[i], identities)), true
+                            (p: boolean, c, i) => !p ? false : (item[i] === undefined ? true : matcher(c, item[i], identities, plugins)), true
                         );
                 }
                 if (typeof item === 'object' && Boolean(item)) {
                     const key = Object.keys(item!)[0] as ArrayMatchType;
                     switch (key) {
                         case 'any':
-                            return Boolean(to.find(part => (matcher as any)(part, (item as any).any, identities)));
+                            return Boolean(to.find(part => (matcher as any)(part, (item as any).any, identities, plugins)));
                         case 'seek':
-                            return seek(to, item) !== null;
+                            return seek(to, item, plugins) !== null;
                         case 'last':
                             const reversedItem = [...(item as any).last].reverse();
                             return reversedItem.length <= to.length && [...to]
                                 .reverse()
                                 .reduce(
-                                    (p, part, i) => !p ? false : (i >= reversedItem.length || matcher(part, reversedItem[i], identities)) as any, true
+                                    (p, part, i) => !p ? false : (i >= reversedItem.length || matcher(part, reversedItem[i], identities, plugins)) as any, true
                                 );
                         case 'some':
-                            return (item as any).some.reduce((p: boolean, c: any) => !p ? false : matcher(to, { 'any': c } as any, identities), true);
+                            return (item as any).some.reduce((p: boolean, c: any) => !p ? false : matcher(to, { 'any': c } as any, identities, plugins), true);
                         default:
                             return false;
                     }
@@ -193,7 +215,7 @@ const matcher = <T extends AllowedTo>(to: T, item: MatchValue<T>, identities: Id
                     return Boolean(toEntries.reduce(
                             (p, [key, value]) => !p
                                 ? false
-                                : ((item as any)[key] === undefined || (matcher as any)(value, (item as any)[key], identities)),
+                                : ((item as any)[key] === undefined || (matcher as any)(value, (item as any)[key], identities, plugins)),
                             true,
                         )
                     );
