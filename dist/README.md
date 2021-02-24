@@ -444,6 +444,20 @@ expect(match({
 
 ```
 
+### Can use functors as objects during match
+
+If you create a functor with enumerable properties, it will match as if it was an object
+
+```typescript
+
+const f1 = functorFactory(() => 5, { a: 5, b: 6 }); // creates a functor with properties a: 5 and b: 6
+const f2 = functorFactory(() => 6, { b: 6 });
+const f3 = functorFactory(() => 7, { b: 7 });
+expect(match(f1).to(f2).solve()).toBeTruthy();
+expect(match(f3).to(f2).solve()).toBeFalsy();
+
+```
+
 ## Footer
 
 If you notice any bugs or errors, do not hesitate to create an issue or a pull request!
